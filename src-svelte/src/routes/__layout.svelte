@@ -4,7 +4,7 @@
 
 	const test = async () => {
 		const input = 'C:\\Users\\lmima\\Desktop\\ownEditor\\src-electron';
-		const huh = await window.fs.readDir(input);
+		// const huh = await window.fs.readDir(input);
 	};
 
 	onMount(() => {

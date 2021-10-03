@@ -52,7 +52,7 @@ var path_1 = __importDefault(require("path"));
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 var validSendChannels = ["dirDialog", "close", "minimize", "maximize"];
-var validListenChannels = [""];
+var validListenChannels = ["dirSelected"];
 var ipcObject = {
     send: {
         sync: function (channel, data) {
@@ -91,17 +91,16 @@ var ipcObject = {
 };
 var fsObject = {
     readDir: function (readPath) { return __awaiter(void 0, void 0, void 0, function () {
-        var fullPath, dir, object, dir_1, dir_1_1, currentEntry, newDir, newRead, e_1_1;
+        var fullPath, dir, temp, dir_1, dir_1_1, currentEntry, newDir, newRead, e_1_1;
         var e_1, _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     fullPath = readPath;
                     dir = fs_1.default.opendirSync(fullPath);
-                    object = {};
+                    temp = [];
                     if (!dir)
-                        return [2 /*return*/];
-                    object[fullPath] = [];
+                        return [2 /*return*/, []];
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 7, 8, 13]);
@@ -112,7 +111,10 @@ var fsObject = {
                     if (!(dir_1_1 = _b.sent(), !dir_1_1.done)) return [3 /*break*/, 6];
                     currentEntry = dir_1_1.value;
                     if (currentEntry.isFile()) {
-                        object[fullPath].push(currentEntry.name);
+                        temp.push({
+                            name: currentEntry.name,
+                            children: undefined,
+                        });
                     }
                     if (!currentEntry.isDirectory()) return [3 /*break*/, 5];
                     newDir = path_1.default.join(fullPath, currentEntry.name);
@@ -120,8 +122,11 @@ var fsObject = {
                 case 4:
                     newRead = _b.sent();
                     if (!newRead)
-                        return [2 /*return*/];
-                    object[fullPath].push(newRead);
+                        return [2 /*return*/, []];
+                    temp.push({
+                        name: currentEntry.name,
+                        children: newRead,
+                    });
                     _b.label = 5;
                 case 5: return [3 /*break*/, 2];
                 case 6: return [3 /*break*/, 13];
@@ -141,7 +146,7 @@ var fsObject = {
                     if (e_1) throw e_1.error;
                     return [7 /*endfinally*/];
                 case 12: return [7 /*endfinally*/];
-                case 13: return [2 /*return*/, object];
+                case 13: return [2 /*return*/, temp];
             }
         });
     }); },

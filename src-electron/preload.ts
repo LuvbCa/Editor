@@ -5,9 +5,12 @@ import path from "path";
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 let validSendChannels = ["dirDialog", "close", "minimize", "maximize"];
-let validListenChannels = [""];
+let validListenChannels = ["dirSelected"];
 
-type RecursiveObject = { [key: string]: (string | RecursiveObject)[] };
+type RecursiveObject = {
+	name: string;
+	children?: RecursiveObject[];
+};
 
 const ipcObject = {
 	send: {
@@ -43,15 +46,16 @@ const fsObject = {
 
 		let dir = fs.opendirSync(fullPath);
 
-		const object: RecursiveObject = {};
+		const temp: RecursiveObject[] = [];
 
-		if (!dir) return;
-
-		object[fullPath] = [];
+		if (!dir) return [];
 
 		for await (let currentEntry of dir) {
 			if (currentEntry.isFile()) {
-				object[fullPath].push(currentEntry.name);
+				temp.push({
+					name: currentEntry.name,
+					children: undefined,
+				});
 			}
 
 			if (currentEntry.isDirectory()) {
@@ -59,11 +63,15 @@ const fsObject = {
 
 				const newRead = await fsObject.readDir(newDir);
 
-				if (!newRead) return;
-				object[fullPath].push(newRead);
+				if (!newRead) return [];
+
+				temp.push({
+					name: currentEntry.name,
+					children: newRead,
+				});
 			}
 		}
-		return object;
+		return temp;
 	},
 };
 

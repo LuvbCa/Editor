@@ -21,8 +21,15 @@ app.on("window-all-closed", () => {
 	}
 });
 
-ipcMain.on("dirDialog", (event) => {
-	dialog.showOpenDialog(BrowserWindow.getFocusedWindow()!);
+ipcMain.on("dirDialog", async (event) => {
+	const result = await dialog.showOpenDialog(
+		BrowserWindow.getFocusedWindow()!,
+		{
+			properties: ["openDirectory"],
+		}
+	);
+	if (result.canceled) return;
+	event.reply("dirSelected", result.filePaths[0]);
 });
 
 ipcMain.on("close", (event) => {
@@ -34,7 +41,7 @@ ipcMain.on("minimize", (event) => {
 	BrowserWindow.getFocusedWindow()?.minimize();
 });
 
-ipcMain.on("fullscreen", (event) => {
+ipcMain.on("maximize", (event) => {
 	const win = BrowserWindow.getFocusedWindow();
 	if (win?.isMaximized()) {
 		win?.unmaximize();

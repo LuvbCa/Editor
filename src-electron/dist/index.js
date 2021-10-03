@@ -60,9 +60,22 @@ electron_1.app.on("window-all-closed", function () {
         electron_1.app.quit();
     }
 });
-electron_1.ipcMain.on("dirDialog", function (event) {
-    electron_1.dialog.showOpenDialog(electron_1.BrowserWindow.getFocusedWindow());
-});
+electron_1.ipcMain.on("dirDialog", function (event) { return __awaiter(void 0, void 0, void 0, function () {
+    var result;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, electron_1.dialog.showOpenDialog(electron_1.BrowserWindow.getFocusedWindow(), {
+                    properties: ["openDirectory"],
+                })];
+            case 1:
+                result = _a.sent();
+                if (result.canceled)
+                    return [2 /*return*/];
+                event.reply("dirSelected", result.filePaths[0]);
+                return [2 /*return*/];
+        }
+    });
+}); });
 electron_1.ipcMain.on("close", function (event) {
     var _a;
     (_a = electron_1.BrowserWindow.getFocusedWindow()) === null || _a === void 0 ? void 0 : _a.close();
@@ -72,7 +85,7 @@ electron_1.ipcMain.on("minimize", function (event) {
     var _a;
     (_a = electron_1.BrowserWindow.getFocusedWindow()) === null || _a === void 0 ? void 0 : _a.minimize();
 });
-electron_1.ipcMain.on("fullscreen", function (event) {
+electron_1.ipcMain.on("maximize", function (event) {
     var win = electron_1.BrowserWindow.getFocusedWindow();
     if (win === null || win === void 0 ? void 0 : win.isMaximized()) {
         win === null || win === void 0 ? void 0 : win.unmaximize();
