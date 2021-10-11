@@ -1,7 +1,11 @@
 import { writable } from 'svelte/store';
 
-export const currentEditor = writable('esadasdas');
+type Navigator = 'settings' | 'editor';
 
-export const currentWorkingDir = writable('C:\\Users\\lmima\\Documents\\BWINF2021');
+export const currentNavigator = writable<Navigator>('editor');
+
+export const currentFile = writable('index.ts');
+
+export const currentWorkingDir = writable('C:\\Users\\lmima\\Documents\\BWINF2021\\aufgabe2\\src');
 
 export const currentWorkingDirTree = writable<RecursiveObject[]>([]);

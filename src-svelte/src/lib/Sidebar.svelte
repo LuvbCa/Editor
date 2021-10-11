@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { slimscroll } from 'svelte-slimscroll';
-
 	import Folder from './Folder.svelte';
 
 	import { onMount } from 'svelte';
-	import { currentWorkingDir, currentWorkingDirTree } from './store';
+	import { currentNavigator, currentWorkingDir, currentWorkingDirTree } from './store';
 
 	onMount(() => {
 		window.ipc.listen('dirSelected', (selectedDir: string) => {
@@ -15,7 +13,7 @@
 
 	const scrollOptions = {
 		// width in pixels of the visible scroll area
-		width: 'auto',
+		width: '100%',
 
 		// height in pixels of the visible scroll area
 		height: '100%',
@@ -78,6 +76,12 @@
 	const openDialog = async () => {
 		window.ipc.send.async('dirDialog', '');
 	};
+	const openSettings = () => {
+		$currentNavigator = 'settings';
+	};
+	const openEditor = () => {
+		$currentNavigator = 'editor';
+	};
 
 	$: updateState($currentWorkingDir);
 
@@ -96,37 +100,29 @@
 		const newDirTree = await window.fs.readDir(newDir);
 
 		currentWorkingDirTree.set(newDirTree);
-
-		console.log($currentWorkingDirTree);
 	};
 </script>
 
-<div id="wrapper" class="relative h-screen flex flex-col gap-10 items-center bg-gray-700">
+<div id="wrapper" class="relative h-full w-full flex flex-col gap-10 items-center bg-gray-700">
 	<div id="quicktools" class="w-full flex flex-row gap-5 bg-gray-600 px-5 py-3">
-		<div on:click={openDialog}>
-			<!-- <FolderIcon size="40%" /> -->
-			FolderIcon
-		</div>
+		<div on:click={openDialog}>FolderIcon</div>
 	</div>
-	<div
-		id="files"
-		use:slimscroll={scrollOptions}
-		class="relative w-full h-auto flex flex-col gap-2 items-center overflow-hidden"
-	>
-		<Folder name="Home" files={$currentWorkingDirTree} expanded={false} />
+	<div id="files" class="relative w-full h-5/6 overflow-y-scroll overflow-x-hidden">
+		<Folder name={$currentWorkingDir} files={$currentWorkingDirTree} expanded={false} />
+	</div>
+	<div id="tabs" class="w-full flex flex-row gap-5 bg-gray-600 px-5 py-3">
+		<div on:click={openSettings}>Settings</div>
+		<div on:click={openEditor}>Editor</div>
 	</div>
 </div>
 
 <style>
 	#files::-webkit-scrollbar {
-		width: 0.5em;
+		width: 10px;
+		background-color: rgba(255, 255, 255, 0.1);
 	}
-
 	#files::-webkit-scrollbar-thumb {
-		--opacity: 0;
-		background-color: rgb(255, 255, 255, var(--opacity));
-	}
-	#files::-webkit-scrollbar-thumb:hover {
-		--opacity: 1;
+		background: rgba(0, 0, 0, 0.548);
+		width: 5px;
 	}
 </style>

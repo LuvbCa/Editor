@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
 import path from "path";
+import os from "os";
 
 app.on("ready", async () => {
 	createWindow();
@@ -23,7 +24,7 @@ app.on("window-all-closed", () => {
 
 ipcMain.on("dirDialog", async (event) => {
 	const result = await dialog.showOpenDialog(
-		BrowserWindow.getFocusedWindow()!,
+		BrowserWindow.fromWebContents(event.sender)!,
 		{
 			properties: ["openDirectory"],
 		}
@@ -33,16 +34,16 @@ ipcMain.on("dirDialog", async (event) => {
 });
 
 ipcMain.on("close", (event) => {
-	BrowserWindow.getFocusedWindow()?.close();
+	BrowserWindow.fromWebContents(event.sender)?.close();
 	app.quit();
 });
 
 ipcMain.on("minimize", (event) => {
-	BrowserWindow.getFocusedWindow()?.minimize();
+	BrowserWindow.fromWebContents(event.sender)?.minimize();
 });
 
 ipcMain.on("maximize", (event) => {
-	const win = BrowserWindow.getFocusedWindow();
+	const win = BrowserWindow.fromWebContents(event.sender);
 	if (win?.isMaximized()) {
 		win?.unmaximize();
 		return;
@@ -50,14 +51,22 @@ ipcMain.on("maximize", (event) => {
 	win?.maximize();
 });
 
-ipcMain.on("select-dir", async (event) => {
-	const result = await dialog.showOpenDialog(
-		BrowserWindow.getFocusedWindow()!,
-		{
-			properties: ["openDirectory"],
-		}
-	);
-	event.returnValue = result.filePaths;
+ipcMain.on("testPerformance", (event) => {
+	let p0 = 0;
+	let p1 = 0;
+
+	p0 = performance.now();
+	const winSender = BrowserWindow.fromWebContents(event.sender);
+	p1 = performance.now();
+
+	console.log(p1 - p0 + "ms");
+
+	console.log(" // ");
+
+	p0 = performance.now();
+	const winFocused = BrowserWindow.getFocusedWindow();
+	p1 = performance.now();
+	console.log(p1 - p0 + "ms");
 });
 
 function registerKeyCombs(win: BrowserWindow) {
@@ -73,6 +82,11 @@ function registerKeyCombs(win: BrowserWindow) {
 	}
 }
 
+function spinUpWorkers() {
+	const cores = os.cpus().length;
+	console.log(cores);
+}
+
 function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
@@ -86,6 +100,9 @@ function createWindow() {
 	});
 
 	registerKeyCombs(win);
+	spinUpWorkers();
+
+	win.webContents.openDevTools();
 
 	win.loadURL(`http://localhost:3000/`);
 }

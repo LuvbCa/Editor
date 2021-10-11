@@ -2,6 +2,7 @@
 
 type RecursiveObject = {
 	name: string;
+	path: string;
 	children?: RecursiveObject[];
 };
 
@@ -19,5 +20,6 @@ interface Window {
 	};
 	fs: {
 		readDir: (readPath: string) => Promise<RecursiveObject[]>;
+		readFile: (readPath: string) => Promise<string>;
 	};
 }

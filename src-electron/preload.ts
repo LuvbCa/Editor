@@ -4,11 +4,18 @@ import path from "path";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-let validSendChannels = ["dirDialog", "close", "minimize", "maximize"];
+let validSendChannels = [
+	"dirDialog",
+	"close",
+	"minimize",
+	"maximize",
+	"testPerformance",
+];
 let validListenChannels = ["dirSelected"];
 
 type RecursiveObject = {
 	name: string;
+	path: string;
 	children?: RecursiveObject[];
 };
 
@@ -51,9 +58,10 @@ const fsObject = {
 		if (!dir) return [];
 
 		for await (let currentEntry of dir) {
-			if (currentEntry.isFile()) {
+			if (currentEntry.isFile() || currentEntry.isSymbolicLink()) {
 				temp.push({
 					name: currentEntry.name,
+					path: readPath + "\\" + currentEntry.name,
 					children: undefined,
 				});
 			}
@@ -67,11 +75,18 @@ const fsObject = {
 
 				temp.push({
 					name: currentEntry.name,
+					path: readPath + "\\" + currentEntry.name,
 					children: newRead,
 				});
 			}
 		}
 		return temp;
+	},
+	readFile: async (readPath: string) => {
+		const file = await fs.promises.readFile(readPath, {
+			encoding: "utf-8",
+		});
+		return file;
 	},
 };
 

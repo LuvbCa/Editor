@@ -51,7 +51,13 @@ var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-var validSendChannels = ["dirDialog", "close", "minimize", "maximize"];
+var validSendChannels = [
+    "dirDialog",
+    "close",
+    "minimize",
+    "maximize",
+    "testPerformance",
+];
 var validListenChannels = ["dirSelected"];
 var ipcObject = {
     send: {
@@ -110,9 +116,10 @@ var fsObject = {
                 case 3:
                     if (!(dir_1_1 = _b.sent(), !dir_1_1.done)) return [3 /*break*/, 6];
                     currentEntry = dir_1_1.value;
-                    if (currentEntry.isFile()) {
+                    if (currentEntry.isFile() || currentEntry.isSymbolicLink()) {
                         temp.push({
                             name: currentEntry.name,
+                            path: readPath + "\\" + currentEntry.name,
                             children: undefined,
                         });
                     }
@@ -125,6 +132,7 @@ var fsObject = {
                         return [2 /*return*/, []];
                     temp.push({
                         name: currentEntry.name,
+                        path: readPath + "\\" + currentEntry.name,
                         children: newRead,
                     });
                     _b.label = 5;
@@ -147,6 +155,19 @@ var fsObject = {
                     return [7 /*endfinally*/];
                 case 12: return [7 /*endfinally*/];
                 case 13: return [2 /*return*/, temp];
+            }
+        });
+    }); },
+    readFile: function (readPath) { return __awaiter(void 0, void 0, void 0, function () {
+        var file;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, fs_1.default.promises.readFile(readPath, {
+                        encoding: "utf-8",
+                    })];
+                case 1:
+                    file = _a.sent();
+                    return [2 /*return*/, file];
             }
         });
     }); },

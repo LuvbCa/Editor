@@ -11,7 +11,8 @@ const config = {
 	kit: {
 		vite: {
 			optimizeDeps: {
-				exclude: ['electron']
+				exclude: ['electron'],
+				include: ['highlight.js/lib/core']
 			},
 			esbuild: {
 				exclude: ['electron']

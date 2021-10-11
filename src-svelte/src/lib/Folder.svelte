@@ -1,33 +1,27 @@
-<script>
+<script lang="ts">
 	import File from './File.svelte';
 
 	export let expanded = false;
 	export let name;
-	export let files;
+	export let files: RecursiveObject[];
 
-	if (!files)
-		files = [
-			{
-				name: 'no',
-				children: undefined
-			}
-		];
+	if (!files) files = [];
 
 	function toggle() {
 		expanded = !expanded;
 	}
 </script>
 
-<span class:expanded on:click={toggle}>{name}</span>
+<span class="w-full text-sm" class:expanded on:click={toggle}>{name}</span>
 
 {#if expanded}
-	<ul>
-		{#each files as file}
+	<ul class="w-full">
+		{#each files as file (file.path)}
 			<li>
 				{#if file.children}
 					<svelte:self name={file.name} files={file.children} expanded={false} />
 				{:else}
-					<File name={file.name} />
+					<File name={file.name} path={file.path} />
 				{/if}
 			</li>
 		{/each}
@@ -37,21 +31,16 @@
 <style>
 	span {
 		padding: 0 0 0 1.5em;
-		background: url(tutorial/icons/folder.svg) 0 0.1em no-repeat;
 		background-size: 1em 1em;
 		font-weight: bold;
 		cursor: pointer;
-	}
-
-	.expanded {
-		background-image: url(tutorial/icons/folder-open.svg);
 	}
 
 	ul {
 		padding: 0.2em 0 0 0.5em;
 		margin: 0 0 0 0.5em;
 		list-style: none;
-		border-left: 1px solid #eee;
+		border-left: 1px solid black;
 	}
 
 	li {

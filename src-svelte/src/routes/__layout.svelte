@@ -1,10 +1,11 @@
 <script lang="ts">
 	import '../app.postcss';
+	import 'svelte-highlight/src/styles/3024.css';
 	import { onMount } from 'svelte';
 
 	const test = async () => {
-		const input = 'C:\\Users\\lmima\\Desktop\\ownEditor\\src-electron';
-		// const huh = await window.fs.readDir(input);
+		const input = 'C:\\Users\\lmima\\Desktop\\ownEditor\\src-electron\\index.ts';
+		const huh = await window.fs.readFile(input);
 	};
 
 	onMount(() => {
@@ -18,11 +19,11 @@
 
 <style>
 	main {
-		height: 100vh;
-		width: 100vw;
+		min-height: 100%;
+		width: 100%;
 	}
 	:global(body) {
-		height: 100%;
+		min-height: 100%;
 		width: 100%;
 	}
 </style>
