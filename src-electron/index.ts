@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
 import path from "path";
 import os from "os";
+import { Worker } from "worker_threads";
+import { executableDir } from "@tauri-apps/api/path";
 
 app.on("ready", async () => {
 	createWindow();
@@ -69,6 +71,10 @@ ipcMain.on("testPerformance", (event) => {
 	console.log(p1 - p0 + "ms");
 });
 
+ipcMain.on("test", (event, type: string, uuid: string) => {
+	event.reply(type + uuid, "amongus");
+});
+
 function registerKeyCombs(win: BrowserWindow) {
 	const ret = globalShortcut.register("CommandOrControl+X", () => {
 		win.webContents.isDevToolsOpened()
@@ -82,12 +88,48 @@ function registerKeyCombs(win: BrowserWindow) {
 	}
 }
 
+interface IWorker {
+	process: Worker;
+	working: boolean;
+}
+
+function getFreeWorker(workers: IWorker[]): IWorker | null {
+	for (let i = 0; i < workers.length; i++) {
+		const element = workers[i];
+		if (!element.working) {
+			element.working = true;
+			return element;
+		}
+	}
+	return null;
+}
+
 function spinUpWorkers() {
-	const cores = os.cpus().length;
-	console.log(cores);
+	const cpusAvailable = os.cpus().length;
+	const workers: Array<IWorker> = [];
+	for (let i = 0; i < cpusAvailable; i++) {
+		const currentWorker = new Worker("./dist/worker.js");
+
+		workers.push({
+			process: currentWorker,
+			working: false,
+		});
+	}
+	return workers;
 }
 
 function createWindow() {
+	const workers = spinUpWorkers();
+
+	ipcMain.on("loadBalance", (event, type, uuid) => {
+		const freeWorker = getFreeWorker(workers);
+		if (freeWorker) {
+			freeWorker.process.once("message", () => {
+				event.reply();
+			});
+		}
+	});
+
 	const win = new BrowserWindow({
 		width: 800,
 		height: 600,
@@ -100,9 +142,8 @@ function createWindow() {
 	});
 
 	registerKeyCombs(win);
-	spinUpWorkers();
 
 	win.webContents.openDevTools();
 
-	win.loadURL(`http://localhost:3000/`);
+	win.loadURL(`http://localhost:3000/?cores=${workers.length}`);
 }

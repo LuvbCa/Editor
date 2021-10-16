@@ -1,17 +1,19 @@
 import { contextBridge, ipcRenderer } from "electron";
+import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-let validSendChannels = [
+const validSendChannels = [
 	"dirDialog",
 	"close",
 	"minimize",
 	"maximize",
+	"test",
 	"testPerformance",
 ];
-let validListenChannels = ["dirSelected"];
+const validListenChannels = ["dirSelected"];
+
+const validBalanceTypes = ["test"];
 
 type RecursiveObject = {
 	name: string;
@@ -19,22 +21,26 @@ type RecursiveObject = {
 	children?: RecursiveObject[];
 };
 
+const metaObject = {
+	workersBooted: parseInt(
+		window.location.href.split("?")[1].replace("cores=", "")
+	),
+};
+
 const ipcObject = {
 	send: {
-		sync: <T>(channel: string, data: any): T | void => {
-			if (validSendChannels.includes(channel)) {
+		sync: <T extends any>(channel: string, data: any): T | void => {
+			if (validSendChannels.includes(channel))
 				return ipcRenderer.sendSync(channel, data);
-			} else {
-				console.log("channel not supported!");
-			}
+
+			console.warn("channel not supported!");
 		},
-		async: (channel: string, data: any): undefined => {
+		async: (channel: string, data: any): void => {
 			if (validSendChannels.includes(channel)) {
 				ipcRenderer.send(channel, data);
 			} else {
-				console.log("channel not supported!");
+				console.warn("channel not supported!");
 			}
-			return undefined;
 		},
 	},
 	listen: (channel: string, func: (...args: any[]) => void): void => {
@@ -45,13 +51,26 @@ const ipcObject = {
 			console.log("channel not supported!");
 		}
 	},
+	balanceLoad: (type: string, callback: (...args: any[]) => any) => {
+		if (!validBalanceTypes.includes(type)) {
+			console.warn("balance type not supported!");
+			return;
+		}
+
+		const uuid = uuidv4();
+
+		ipcRenderer.send("test", type, uuid);
+		ipcRenderer.once(type + uuid, (event, ...args) => {
+			callback(...args);
+		});
+	},
 };
 
 const fsObject = {
 	readDir: async (readPath: string) => {
 		const fullPath = readPath;
 
-		let dir = fs.opendirSync(fullPath);
+		let dir = await fs.promises.opendir(fullPath);
 
 		const temp: RecursiveObject[] = [];
 
@@ -93,3 +112,5 @@ const fsObject = {
 contextBridge.exposeInMainWorld("ipc", ipcObject);
 
 contextBridge.exposeInMainWorld("fs", fsObject);
+
+contextBridge.exposeInMainWorld("meta", metaObject);

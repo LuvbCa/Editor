@@ -47,36 +47,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
+var uuid_1 = require("uuid");
 var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
 var validSendChannels = [
     "dirDialog",
     "close",
     "minimize",
     "maximize",
+    "test",
     "testPerformance",
 ];
 var validListenChannels = ["dirSelected"];
+var validBalanceTypes = ["test"];
+var metaObject = {
+    workersBooted: parseInt(window.location.href.split("?")[1].replace("cores=", "")),
+};
 var ipcObject = {
     send: {
         sync: function (channel, data) {
-            if (validSendChannels.includes(channel)) {
+            if (validSendChannels.includes(channel))
                 return electron_1.ipcRenderer.sendSync(channel, data);
-            }
-            else {
-                console.log("channel not supported!");
-            }
+            console.warn("channel not supported!");
         },
         async: function (channel, data) {
             if (validSendChannels.includes(channel)) {
                 electron_1.ipcRenderer.send(channel, data);
             }
             else {
-                console.log("channel not supported!");
+                console.warn("channel not supported!");
             }
-            return undefined;
         },
     },
     listen: function (channel, func) {
@@ -94,6 +94,21 @@ var ipcObject = {
             console.log("channel not supported!");
         }
     },
+    balanceLoad: function (type, callback) {
+        if (!validBalanceTypes.includes(type)) {
+            console.warn("balance type not supported!");
+            return;
+        }
+        var uuid = (0, uuid_1.v4)();
+        electron_1.ipcRenderer.send("test", type, uuid);
+        electron_1.ipcRenderer.once(type + uuid, function (event) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            callback.apply(void 0, args);
+        });
+    },
 };
 var fsObject = {
     readDir: function (readPath) { return __awaiter(void 0, void 0, void 0, function () {
@@ -103,18 +118,20 @@ var fsObject = {
             switch (_b.label) {
                 case 0:
                     fullPath = readPath;
-                    dir = fs_1.default.opendirSync(fullPath);
+                    return [4 /*yield*/, fs_1.default.promises.opendir(fullPath)];
+                case 1:
+                    dir = _b.sent();
                     temp = [];
                     if (!dir)
                         return [2 /*return*/, []];
-                    _b.label = 1;
-                case 1:
-                    _b.trys.push([1, 7, 8, 13]);
-                    dir_1 = __asyncValues(dir);
                     _b.label = 2;
-                case 2: return [4 /*yield*/, dir_1.next()];
-                case 3:
-                    if (!(dir_1_1 = _b.sent(), !dir_1_1.done)) return [3 /*break*/, 6];
+                case 2:
+                    _b.trys.push([2, 8, 9, 14]);
+                    dir_1 = __asyncValues(dir);
+                    _b.label = 3;
+                case 3: return [4 /*yield*/, dir_1.next()];
+                case 4:
+                    if (!(dir_1_1 = _b.sent(), !dir_1_1.done)) return [3 /*break*/, 7];
                     currentEntry = dir_1_1.value;
                     if (currentEntry.isFile() || currentEntry.isSymbolicLink()) {
                         temp.push({
@@ -123,10 +140,10 @@ var fsObject = {
                             children: undefined,
                         });
                     }
-                    if (!currentEntry.isDirectory()) return [3 /*break*/, 5];
+                    if (!currentEntry.isDirectory()) return [3 /*break*/, 6];
                     newDir = path_1.default.join(fullPath, currentEntry.name);
                     return [4 /*yield*/, fsObject.readDir(newDir)];
-                case 4:
+                case 5:
                     newRead = _b.sent();
                     if (!newRead)
                         return [2 /*return*/, []];
@@ -135,26 +152,26 @@ var fsObject = {
                         path: readPath + "\\" + currentEntry.name,
                         children: newRead,
                     });
-                    _b.label = 5;
-                case 5: return [3 /*break*/, 2];
-                case 6: return [3 /*break*/, 13];
-                case 7:
+                    _b.label = 6;
+                case 6: return [3 /*break*/, 3];
+                case 7: return [3 /*break*/, 14];
+                case 8:
                     e_1_1 = _b.sent();
                     e_1 = { error: e_1_1 };
-                    return [3 /*break*/, 13];
-                case 8:
-                    _b.trys.push([8, , 11, 12]);
-                    if (!(dir_1_1 && !dir_1_1.done && (_a = dir_1.return))) return [3 /*break*/, 10];
-                    return [4 /*yield*/, _a.call(dir_1)];
+                    return [3 /*break*/, 14];
                 case 9:
+                    _b.trys.push([9, , 12, 13]);
+                    if (!(dir_1_1 && !dir_1_1.done && (_a = dir_1.return))) return [3 /*break*/, 11];
+                    return [4 /*yield*/, _a.call(dir_1)];
+                case 10:
                     _b.sent();
-                    _b.label = 10;
-                case 10: return [3 /*break*/, 12];
-                case 11:
+                    _b.label = 11;
+                case 11: return [3 /*break*/, 13];
+                case 12:
                     if (e_1) throw e_1.error;
                     return [7 /*endfinally*/];
-                case 12: return [7 /*endfinally*/];
-                case 13: return [2 /*return*/, temp];
+                case 13: return [7 /*endfinally*/];
+                case 14: return [2 /*return*/, temp];
             }
         });
     }); },
@@ -174,3 +191,4 @@ var fsObject = {
 };
 electron_1.contextBridge.exposeInMainWorld("ipc", ipcObject);
 electron_1.contextBridge.exposeInMainWorld("fs", fsObject);
+electron_1.contextBridge.exposeInMainWorld("meta", metaObject);

@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var path_1 = __importDefault(require("path"));
 var os_1 = __importDefault(require("os"));
+var worker_threads_1 = require("worker_threads");
 electron_1.app.on("ready", function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         createWindow();
@@ -107,6 +108,9 @@ electron_1.ipcMain.on("testPerformance", function (event) {
     p1 = performance.now();
     console.log(p1 - p0 + "ms");
 });
+electron_1.ipcMain.on("test", function (event, type, uuid) {
+    event.reply(type + uuid, "amongus");
+});
 function registerKeyCombs(win) {
     var ret = electron_1.globalShortcut.register("CommandOrControl+X", function () {
         win.webContents.isDevToolsOpened()
@@ -118,11 +122,38 @@ function registerKeyCombs(win) {
         win.webContents.openDevTools();
     }
 }
+function getFreeWorker(workers) {
+    for (var i = 0; i < workers.length; i++) {
+        var element = workers[i];
+        if (!element.working) {
+            element.working = true;
+            return element;
+        }
+    }
+    return null;
+}
 function spinUpWorkers() {
-    var cores = os_1.default.cpus().length;
-    console.log(cores);
+    var cpusAvailable = os_1.default.cpus().length;
+    var workers = [];
+    for (var i = 0; i < cpusAvailable; i++) {
+        var currentWorker = new worker_threads_1.Worker("./dist/worker.js");
+        workers.push({
+            process: currentWorker,
+            working: false,
+        });
+    }
+    return workers;
 }
 function createWindow() {
+    var workers = spinUpWorkers();
+    electron_1.ipcMain.on("loadBalance", function (event, type, uuid) {
+        var freeWorker = getFreeWorker(workers);
+        if (freeWorker) {
+            freeWorker.process.once("message", function () {
+                event.reply();
+            });
+        }
+    });
     var win = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
@@ -134,7 +165,6 @@ function createWindow() {
         },
     });
     registerKeyCombs(win);
-    spinUpWorkers();
     win.webContents.openDevTools();
-    win.loadURL("http://localhost:3000/");
+    win.loadURL("http://localhost:3000/?cores=" + workers.length);
 }
