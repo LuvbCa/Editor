@@ -41,8 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var path_1 = __importDefault(require("path"));
-var os_1 = __importDefault(require("os"));
-var worker_threads_1 = require("worker_threads");
+// create a worker pool using an external worker script
 electron_1.app.on("ready", function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         createWindow();
@@ -122,49 +121,30 @@ function registerKeyCombs(win) {
         win.webContents.openDevTools();
     }
 }
-function getFreeWorker(workers) {
-    for (var i = 0; i < workers.length; i++) {
-        var element = workers[i];
-        if (!element.working) {
-            element.working = true;
-            return element;
-        }
-    }
-    return null;
-}
-function spinUpWorkers() {
-    var cpusAvailable = os_1.default.cpus().length;
-    var workers = [];
-    for (var i = 0; i < cpusAvailable; i++) {
-        var currentWorker = new worker_threads_1.Worker("./dist/worker.js");
-        workers.push({
-            process: currentWorker,
-            working: false,
-        });
-    }
-    return workers;
-}
 function createWindow() {
-    var workers = spinUpWorkers();
-    electron_1.ipcMain.on("loadBalance", function (event, type, uuid) {
-        var freeWorker = getFreeWorker(workers);
-        if (freeWorker) {
-            freeWorker.process.once("message", function () {
-                event.reply();
+    return __awaiter(this, void 0, void 0, function () {
+        var win;
+        return __generator(this, function (_a) {
+            win = new electron_1.BrowserWindow({
+                width: 800,
+                height: 600,
+                frame: false,
+                show: false,
+                webPreferences: {
+                    nodeIntegration: true,
+                    contextIsolation: true,
+                    preload: path_1.default.join(__dirname, "preload.js"),
+                },
             });
-        }
+            win.once("ready-to-show", function () {
+                //workaround: reset zoom
+                win.webContents.setZoomFactor(1);
+                win.show();
+            });
+            registerKeyCombs(win);
+            win.webContents.openDevTools();
+            win.loadURL("http://localhost:3000/");
+            return [2 /*return*/];
+        });
     });
-    var win = new electron_1.BrowserWindow({
-        width: 800,
-        height: 600,
-        frame: false,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: true,
-            preload: path_1.default.join(__dirname, "preload.js"),
-        },
-    });
-    registerKeyCombs(win);
-    win.webContents.openDevTools();
-    win.loadURL("http://localhost:3000/?cores=" + workers.length);
 }

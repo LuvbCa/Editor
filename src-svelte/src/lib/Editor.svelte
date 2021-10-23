@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { currentFile } from './store';
+	import { currentFile, currentWorkingDir } from './store';
+
+	import Parser from 'web-tree-sitter';
 
 	interface Line {
 		text: string;
@@ -15,13 +17,14 @@
 		const text = await window.fs.readFile(path);
 		Content = text;
 		RenderLines = await convertTextToLines(text);
+		initalParse();
 	};
 
 	//not really uuid
 	const NoReUUID = () => Math.random() * 100 * Math.random();
 
 	const convertTextToLines = async (text: string): Promise<Line[]> => {
-		const Lines: Line[] = [];
+		const lines: Line[] = [];
 		const matches = text.matchAll(/\r\n/g);
 		const matchesArray: RegExpMatchArray[] = [];
 		for (const match of matches) {
@@ -43,7 +46,7 @@
 					tabsArray.push(tab);
 				}
 
-				Lines.push({
+				lines.push({
 					indent: tabsArray.length,
 					text: sanitizedSlicedInput,
 					uuid: NoReUUID()
@@ -51,14 +54,14 @@
 			} else {
 				const slicedInput = element.input.slice(0, element.index);
 
-				Lines.push({
+				lines.push({
 					indent: 0,
 					text: slicedInput,
 					uuid: NoReUUID()
 				});
 			}
 		}
-		return Lines;
+		return lines;
 	};
 
 	const convertLinesToText = async (lines: Line[]): Promise<string> => {
@@ -146,6 +149,25 @@
 		}
 	};
 
+	const initalParse = async () => {
+		await Parser.init();
+		const [JavaScript, TypeScript] = await Promise.all([
+			Parser.Language.load('tree-sitter-javascript.wasm'),
+			Parser.Language.load('tree-sitter-typescript.wasm')
+		]);
+
+		const parser = new Parser();
+		parser.setLanguage(TypeScript);
+
+		try {
+			const tree = parser.parse((index, position) => {
+				console.log('parsing...');
+				return RenderLines[position.row].text.slice(position.column);
+			});
+			console.log(JavaScript);
+			console.log(tree.rootNode);
+		} catch (e) {}
+	};
 	$: readFile($currentFile);
 </script>
 
@@ -157,14 +179,14 @@
 			on:keydown|stopPropagation={handleInputs}
 			data-line-number={index}
 		>
-			<span class="inline-block w-10">
+			<span class="inline-block w-10 select-none">
 				{index}
 			</span>
 			<span
 				contenteditable="true"
 				spellcheck="false"
 				style="margin-left: {Line.indent * 2}em;"
-				class="active:border-none focus-visible:outline-none"
+				class="active:border-none focus-visible:outline-none content select-text"
 				id="line-index-editable-{index}"
 			>
 				{Line.text}
@@ -176,6 +198,9 @@
 <style>
 	div {
 		font-family: monospace;
+	}
+	.content {
+		all: unset;
 	}
 	#editor::-webkit-scrollbar {
 		width: 10px;

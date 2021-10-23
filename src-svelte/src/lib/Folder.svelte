@@ -1,25 +1,62 @@
 <script lang="ts">
 	import File from './File.svelte';
+	import {
+		currentWorkingDirTree,
+		currentWorkingDirTreeDeepestLayer,
+		currentWorkingDir
+	} from './store';
 
 	export let expanded = false;
+	export let layer: number;
 	export let name;
-	export let files: RecursiveObject[];
+	export let files: LayerDir;
 
-	if (!files) files = [];
+	function walkDownTree(pathToGetTo: string[], _currentWorkingDirTree: LayerDir): LayerDir {
+		if (pathToGetTo.length == 0) return _currentWorkingDirTree;
+		const currentLayer = _currentWorkingDirTree.children[pathToGetTo.shift()];
+		//@ts-ignore
+		return walkDownTree(pathToGetTo, currentLayer);
+	}
 
-	function toggle() {
+	function getFolderPath(rootPath: string, pathToGetTo: string): string[] {
+		const path = pathToGetTo
+			.replace(rootPath, '')
+			.split('\\')
+			.filter((val) => {
+				return val !== '';
+			});
+		console.log(path);
+		return path;
+	}
+
+	async function toggle() {
+		if (files.type === 'directory' && Object.values(files.children).length === 0) {
+			if ($currentWorkingDirTreeDeepestLayer > layer) {
+				$currentWorkingDirTreeDeepestLayer = layer;
+			}
+
+			const path = getFolderPath($currentWorkingDir, files.path);
+			const walkedTree = walkDownTree(path, $currentWorkingDirTree);
+			const newEntry = await window.fs.layerReadDir(files.path, 1, 0);
+			walkedTree.children = newEntry.children;
+			$currentWorkingDirTree = $currentWorkingDirTree;
+			console.log('read new Dir');
+		}
 		expanded = !expanded;
 	}
 </script>
 
-<span class="w-full text-sm" class:expanded on:click={toggle}>{name}</span>
+<span class="w-full text-sm flex" class:expanded on:click={toggle}>
+	<img src="icons/folder.svg" alt="" />
+	{name}
+</span>
 
 {#if expanded}
 	<ul class="w-full">
-		{#each files as file (file.path)}
+		{#each Object.values(files.children) as file}
 			<li>
-				{#if file.children}
-					<svelte:self name={file.name} files={file.children} expanded={false} />
+				{#if file.type === 'directory'}
+					<svelte:self name={file.name} files={file} expanded={false} layer={layer + 1} />
 				{:else}
 					<File name={file.name} path={file.path} />
 				{/if}
@@ -30,10 +67,13 @@
 
 <style>
 	span {
-		padding: 0 0 0 1.5em;
+		/* padding: 0 0 0 1.5em; */
 		background-size: 1em 1em;
 		font-weight: bold;
 		cursor: pointer;
+	}
+	img {
+		padding-right: 0.5em;
 	}
 
 	ul {

@@ -3,10 +3,15 @@
 	import Editor from '$lib/Editor.svelte';
 	import Titlebar from '$lib/Titlebar.svelte';
 	import Settings from '$lib/Settings.svelte';
-	import { currentNavigator } from '$lib/store';
+	import {
+		currentNavigator,
+		currentWorkingDirTree,
+		currentWorkingDirTreeDeepestLayer
+	} from '$lib/store';
 	import Tabcontainer from '$lib/components/Tabcontainer.svelte';
 
-	currentNavigator;
+	// $: console.log($currentWorkingDirTreeDeepestLayer);
+	// $: console.log($currentWorkingDirTree);
 </script>
 
 <svelte:head>

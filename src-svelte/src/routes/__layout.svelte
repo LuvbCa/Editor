@@ -13,7 +13,7 @@
 	});
 </script>
 
-<main class="relative">
+<main class="relative select-text">
 	<slot />
 </main>
 

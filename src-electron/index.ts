@@ -1,8 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
 import path from "path";
-import os from "os";
-import { Worker } from "worker_threads";
-import { executableDir } from "@tauri-apps/api/path";
+
+// create a worker pool using an external worker script
 
 app.on("ready", async () => {
 	createWindow();
@@ -88,52 +87,12 @@ function registerKeyCombs(win: BrowserWindow) {
 	}
 }
 
-interface IWorker {
-	process: Worker;
-	working: boolean;
-}
-
-function getFreeWorker(workers: IWorker[]): IWorker | null {
-	for (let i = 0; i < workers.length; i++) {
-		const element = workers[i];
-		if (!element.working) {
-			element.working = true;
-			return element;
-		}
-	}
-	return null;
-}
-
-function spinUpWorkers() {
-	const cpusAvailable = os.cpus().length;
-	const workers: Array<IWorker> = [];
-	for (let i = 0; i < cpusAvailable; i++) {
-		const currentWorker = new Worker("./dist/worker.js");
-
-		workers.push({
-			process: currentWorker,
-			working: false,
-		});
-	}
-	return workers;
-}
-
-function createWindow() {
-	const workers = spinUpWorkers();
-
-	ipcMain.on("loadBalance", (event, type, uuid) => {
-		const freeWorker = getFreeWorker(workers);
-		if (freeWorker) {
-			freeWorker.process.once("message", () => {
-				event.reply();
-			});
-		}
-	});
-
+async function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
 		height: 600,
 		frame: false,
+		show: false,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
@@ -141,9 +100,15 @@ function createWindow() {
 		},
 	});
 
+	win.once("ready-to-show", () => {
+		//workaround: reset zoom
+		win.webContents.setZoomFactor(1);
+		win.show();
+	});
+
 	registerKeyCombs(win);
 
 	win.webContents.openDevTools();
 
-	win.loadURL(`http://localhost:3000/?cores=${workers.length}`);
+	win.loadURL("http://localhost:3000/");
 }

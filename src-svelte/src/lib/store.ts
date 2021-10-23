@@ -8,4 +8,6 @@ export const currentFile = writable('index.ts');
 
 export const currentWorkingDir = writable('C:\\Users\\lmima\\Documents\\BWINF2021\\aufgabe2\\src');
 
-export const currentWorkingDirTree = writable<RecursiveObject[]>([]);
+export const currentWorkingDirTree = writable<LayerDir>({});
+
+export const currentWorkingDirTreeDeepestLayer = writable(0);

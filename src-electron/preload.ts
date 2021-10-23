@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
+import { event } from "@tauri-apps/api";
 
 const validSendChannels = [
 	"dirDialog",
@@ -13,7 +14,7 @@ const validSendChannels = [
 ];
 const validListenChannels = ["dirSelected"];
 
-const validBalanceTypes = ["test"];
+const validBalanceTypes = ["recursiveDir"];
 
 type RecursiveObject = {
 	name: string;
@@ -21,11 +22,26 @@ type RecursiveObject = {
 	children?: RecursiveObject[];
 };
 
-const metaObject = {
-	workersBooted: parseInt(
-		window.location.href.split("?")[1].replace("cores=", "")
-	),
-};
+interface LayerEntry {
+	name: string;
+	path: string;
+}
+interface LayerDir extends LayerEntry {
+	children: { [key: string]: LayerDir | LayerFile };
+	type: "directory";
+}
+
+interface LayerFile extends LayerEntry {
+	type: "file";
+}
+
+ipcRenderer.on("error", (event, errorcode: string) => {
+	alert(errorcode);
+});
+
+ipcRenderer.on("meta", (event, meta) => {
+	console.log("meta", meta);
+});
 
 const ipcObject = {
 	send: {
@@ -51,7 +67,13 @@ const ipcObject = {
 			console.log("channel not supported!");
 		}
 	},
-	balanceLoad: (type: string, callback: (...args: any[]) => any) => {
+	balanceLoad: (
+		type: string,
+		input: {
+			[key: string]: any;
+		},
+		callback: (...args: any[]) => any
+	) => {
 		if (!validBalanceTypes.includes(type)) {
 			console.warn("balance type not supported!");
 			return;
@@ -59,14 +81,17 @@ const ipcObject = {
 
 		const uuid = uuidv4();
 
-		ipcRenderer.send("test", type, uuid);
-		ipcRenderer.once(type + uuid, (event, ...args) => {
+		ipcRenderer.send("balanceLoad", type, uuid, input);
+		ipcRenderer.once(`${type}:${uuid}`, (event, ...args) => {
 			callback(...args);
 		});
 	},
 };
 
 const fsObject = {
+	/**
+	 * @deprecated will removed before v1.0.0 -> use layerReadDir instead
+	 */
 	readDir: async (readPath: string) => {
 		const fullPath = readPath;
 
@@ -90,8 +115,6 @@ const fsObject = {
 
 				const newRead = await fsObject.readDir(newDir);
 
-				if (!newRead) return [];
-
 				temp.push({
 					name: currentEntry.name,
 					path: readPath + "\\" + currentEntry.name,
@@ -100,6 +123,61 @@ const fsObject = {
 			}
 		}
 		return temp;
+	},
+	layerReadDir: async (
+		readPath: string,
+		maxLayer: number,
+		currentLayer: number = 0
+	) => {
+		/*
+		maxLayer = 0: read only given dir, 
+		maxLayer = 1: read given dir and every child dir, 
+		maxLayer = 2: read given dir and every child dir and every child dir of the child dir etc...
+		*/
+
+		const fullPath = path.resolve(readPath);
+		const root: LayerDir = {
+			name: fullPath.substr(fullPath.lastIndexOf("\\") + 1),
+			path: fullPath,
+			children: {},
+			type: "directory",
+		};
+
+		if (maxLayer < currentLayer) {
+			return root;
+		}
+
+		const dir = await fs.promises.opendir(fullPath);
+
+		for await (let currentEntry of dir) {
+			if (currentEntry.isFile() || currentEntry.isSymbolicLink()) {
+				const resolvedPath = path.join(fullPath, currentEntry.name);
+				root.children[currentEntry.name] = {
+					name: currentEntry.name,
+					path: resolvedPath,
+					type: "file",
+				};
+			}
+
+			if (currentEntry.isDirectory()) {
+				const newDir = path.join(fullPath, currentEntry.name);
+
+				try {
+					const newRead = await fsObject.layerReadDir(
+						newDir,
+						maxLayer,
+						currentLayer + 1
+					);
+
+					root.children[currentEntry.name] = newRead;
+				} catch (e) {
+					// root.children[currentEntry.name] = e;
+					console.warn(e, "----> reading will continue");
+				}
+			}
+		}
+
+		return root;
 	},
 	readFile: async (readPath: string) => {
 		const file = await fs.promises.readFile(readPath, {
@@ -112,5 +190,3 @@ const fsObject = {
 contextBridge.exposeInMainWorld("ipc", ipcObject);
 
 contextBridge.exposeInMainWorld("fs", fsObject);
-
-contextBridge.exposeInMainWorld("meta", metaObject);

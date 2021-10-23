@@ -97,7 +97,7 @@
 	const updateFolder = async (newDir: string) => {
 		console.log('read working dir tree');
 
-		const newDirTree = await window.fs.readDir(newDir);
+		const newDirTree = await window.fs.layerReadDir(newDir, 1, 0);
 
 		currentWorkingDirTree.set(newDirTree);
 	};
@@ -108,7 +108,7 @@
 		<div on:click={openDialog}>FolderIcon</div>
 	</div>
 	<div id="files" class="relative w-full h-5/6 overflow-y-scroll overflow-x-hidden">
-		<Folder name={$currentWorkingDir} files={$currentWorkingDirTree} expanded={false} />
+		<Folder name={$currentWorkingDir} files={$currentWorkingDirTree} layer={0} expanded={false} />
 	</div>
 	<div id="tabs" class="w-full flex flex-row gap-5 bg-gray-600 px-5 py-3">
 		<div on:click={openSettings}>Settings</div>

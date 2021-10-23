@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
 		"start": "electron ./dist/index.js"
 	},
 	"author": "",
@@ -14,6 +15,10 @@
 	},
 	"dependencies": {
 		"@types/uuid": "^8.3.1",
-		"uuid": "^8.3.2"
+		"@types/workerpool": "^6.1.0",
+		"microjob": "^0.7.0",
+		"piscina": "^3.1.0",
+		"uuid": "^8.3.2",
+		"workerpool": "^6.1.5"
 	}
 }

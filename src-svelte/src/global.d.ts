@@ -6,8 +6,17 @@ type RecursiveObject = {
 	children?: RecursiveObject[];
 };
 
-interface Directroy {
-	files: string[];
+interface LayerEntry {
+	name: string;
+	path: string;
+}
+interface LayerDir extends LayerEntry {
+	children: { [key: string]: LayerDir | LayerFile };
+	type: 'directory';
+}
+
+interface LayerFile extends LayerEntry {
+	type: 'file';
 }
 
 interface Window {
@@ -20,10 +29,17 @@ interface Window {
 			async: (channel: string, data: any) => void;
 		};
 		listen: (channel: string, func: (...args: any[]) => void) => void;
-		balanceLoad: (type: string, callback: (...args: any[]) => any) => void;
+		balanceLoad: (
+			type: string,
+			input: {
+				[key: string]: any;
+			},
+			callback: (...args: any[]) => any
+		) => void;
 	};
 	fs: {
 		readDir: (readPath: string) => Promise<RecursiveObject[]>;
 		readFile: (readPath: string) => Promise<string>;
+		layerReadDir: (readPath: string, maxLayer: number, currentLayer: number) => Promise<LayerDir>;
 	};
 }

@@ -9,11 +9,17 @@
 	};
 </script>
 
-<span class="w-full text-sm" on:click={readFileIntoEditor}>{name}</span>
+<span class="w-full text-sm flex items-center" on:click={readFileIntoEditor}>
+	<img src="icons/file.svg" alt="" />
+	{name}
+</span>
 
 <style>
 	span {
-		padding: 0 0 0 1.5em;
+		/* padding: 0 0 0 1.5em; */
 		cursor: pointer;
+	}
+	img {
+		padding-right: 0.5em;
 	}
 </style>
