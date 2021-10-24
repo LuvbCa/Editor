@@ -10,7 +10,7 @@
 </script>
 
 <span class="w-full text-sm flex items-center" on:click={readFileIntoEditor}>
-	<img src="icons/file.svg" alt="" />
+	<img src="icons/file.svg" alt="" loading="lazy" />
 	{name}
 </span>
 
@@ -21,5 +21,7 @@
 	}
 	img {
 		padding-right: 0.5em;
+		height: 1em;
+		aspect-ratio: 1/1;
 	}
 </style>

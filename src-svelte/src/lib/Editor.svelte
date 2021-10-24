@@ -2,7 +2,7 @@
 	import { tick } from 'svelte';
 	import { currentFile, currentWorkingDir } from './store';
 
-	import Parser from 'web-tree-sitter';
+	import Parser, { Language, SyntaxNode } from 'web-tree-sitter';
 
 	interface Line {
 		text: string;
@@ -149,6 +149,12 @@
 		}
 	};
 
+	const recursiveTreePrint = (input: SyntaxNode) => {
+		input.children.forEach((element) => {
+			recursiveTreePrint(element);
+		});
+	};
+
 	const initalParse = async () => {
 		await Parser.init();
 		const [JavaScript, TypeScript] = await Promise.all([
@@ -157,15 +163,12 @@
 		]);
 
 		const parser = new Parser();
-		parser.setLanguage(TypeScript);
+		parser.setLanguage(JavaScript);
 
 		try {
-			const tree = parser.parse((index, position) => {
-				console.log('parsing...');
-				return RenderLines[position.row].text.slice(position.column);
-			});
-			console.log(JavaScript);
-			console.log(tree.rootNode);
+			const tree = parser.parse(Content);
+			console.log(TypeScript);
+			recursiveTreePrint(tree.rootNode);
 		} catch (e) {}
 	};
 	$: readFile($currentFile);
@@ -195,9 +198,18 @@
 	{/each}
 </div>
 
+<svelte:head>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap"
+		rel="stylesheet"
+	/>
+</svelte:head>
+
 <style>
 	div {
-		font-family: monospace;
+		font-family: Fira Code;
 	}
 	.content {
 		all: unset;

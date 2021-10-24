@@ -47,7 +47,7 @@
 </script>
 
 <span class="w-full text-sm flex" class:expanded on:click={toggle}>
-	<img src="icons/folder.svg" alt="" />
+	<img src="icons/folder.svg" alt="" loading="lazy" />
 	{name}
 </span>
 
@@ -67,13 +67,14 @@
 
 <style>
 	span {
-		/* padding: 0 0 0 1.5em; */
 		background-size: 1em 1em;
 		font-weight: bold;
 		cursor: pointer;
 	}
 	img {
 		padding-right: 0.5em;
+		height: 1em;
+		aspect-ratio: 1/1;
 	}
 
 	ul {

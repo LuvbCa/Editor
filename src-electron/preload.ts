@@ -89,41 +89,6 @@ const ipcObject = {
 };
 
 const fsObject = {
-	/**
-	 * @deprecated will removed before v1.0.0 -> use layerReadDir instead
-	 */
-	readDir: async (readPath: string) => {
-		const fullPath = readPath;
-
-		let dir = await fs.promises.opendir(fullPath);
-
-		const temp: RecursiveObject[] = [];
-
-		if (!dir) return [];
-
-		for await (let currentEntry of dir) {
-			if (currentEntry.isFile() || currentEntry.isSymbolicLink()) {
-				temp.push({
-					name: currentEntry.name,
-					path: readPath + "\\" + currentEntry.name,
-					children: undefined,
-				});
-			}
-
-			if (currentEntry.isDirectory()) {
-				const newDir = path.join(fullPath, currentEntry.name);
-
-				const newRead = await fsObject.readDir(newDir);
-
-				temp.push({
-					name: currentEntry.name,
-					path: readPath + "\\" + currentEntry.name,
-					children: newRead,
-				});
-			}
-		}
-		return temp;
-	},
 	layerReadDir: async (
 		readPath: string,
 		maxLayer: number,
