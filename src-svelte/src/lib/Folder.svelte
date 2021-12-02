@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { ChevronDownIcon, ChevronUpIcon, FolderIcon } from 'svelte-feather-icons';
+
 	import File from './File.svelte';
 	import {
 		currentWorkingDirTree,
@@ -46,8 +48,18 @@
 	}
 </script>
 
-<span class="w-full text-sm flex" class:expanded on:click={toggle}>
-	<img src="icons/folder.svg" alt="" loading="lazy" />
+<span
+	class="h-6 w-full text-sm flex text-white  transition"
+	class:expanded
+	on:click={toggle}
+>
+	<div class="w-6 px-1">
+		{#if expanded}
+			<ChevronUpIcon />
+		{:else}
+			<ChevronDownIcon />
+		{/if}
+	</div>
 	{name}
 </span>
 
@@ -71,17 +83,13 @@
 		font-weight: bold;
 		cursor: pointer;
 	}
-	img {
-		padding-right: 0.5em;
-		height: 1em;
-		aspect-ratio: 1/1;
-	}
 
 	ul {
 		padding: 0.2em 0 0 0.5em;
 		margin: 0 0 0 0.5em;
 		list-style: none;
-		border-left: 1px solid black;
+		border-left: 1px solid;
+		@apply border-gray-700;
 	}
 
 	li {

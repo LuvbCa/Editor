@@ -7,8 +7,14 @@ const config = {
 	purge: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
 		extend: {
+			colors: {
+				gray: colors.blueGray
+			},
 			shadow: {
 				colors
+			},
+			fontFamily: {
+				poppins: ['Poppins']
 			}
 		}
 	}

@@ -3,15 +3,11 @@
 	import { currentFile, currentWorkingDir } from './store';
 
 	import Parser, { Language, SyntaxNode } from 'web-tree-sitter';
-
-	interface Line {
-		text: string;
-		indent: number;
-		uuid: number;
-	}
+	import LineRenderer from './components/LineRenderer.svelte';
+	import { element } from 'svelte/internal';
 
 	let Content: string = '';
-	let RenderLines: Line[] = [];
+	let RenderLines: EditorLine[] = [];
 
 	const readFile = async (path: string) => {
 		const text = await window.fs.readFile(path);
@@ -23,8 +19,8 @@
 	//not really uuid
 	const NoReUUID = () => Math.random() * 100 * Math.random();
 
-	const convertTextToLines = async (text: string): Promise<Line[]> => {
-		const lines: Line[] = [];
+	const convertTextToLines = async (text: string): Promise<EditorLine[]> => {
+		const lines: EditorLine[] = [];
 		const matches = text.matchAll(/\r\n/g);
 		const matchesArray: RegExpMatchArray[] = [];
 		for (const match of matches) {
@@ -64,7 +60,7 @@
 		return lines;
 	};
 
-	const convertLinesToText = async (lines: Line[]): Promise<string> => {
+	const convertLinesToText = async (lines: EditorLine[]): Promise<string> => {
 		let text = '';
 
 		for (let i = 0; i < lines.length; i++) {
@@ -82,12 +78,22 @@
 		return text;
 	};
 
-	const handleInputs: svelte.JSX.KeyboardEventHandler<HTMLSpanElement> = async (e) => {
+	const handleInputs = async (
+		event: CustomEvent<KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }>
+	) => {
+		const e = event.detail;
+
+		const newLineNumber = parseInt((e.composedPath()[1] as HTMLElement).dataset.line);
+		const cursor = window.getSelection();
+		RenderLines[newLineNumber].text = document.getElementById(
+			`line-index-editable-${newLineNumber}`
+		).innerText;
+		RenderLines = RenderLines;
+
 		if (e.key == 'Enter') {
 			//stop linebreak
 			e.preventDefault();
 
-			const newLineNumber = parseInt((e.composedPath()[1] as HTMLElement).dataset.lineNumber);
 			const prevElement = RenderLines[newLineNumber];
 			const cursor = window.getSelection();
 
@@ -119,33 +125,61 @@
 
 			return;
 		}
-		if (e.key == 'Backspace' && (e.composedPath()[0] as HTMLElement).innerText === '') {
+		if (e.key === 'Backspace' && cursor.focusOffset + cursor.anchorOffset === 0) {
+			e.preventDefault();
+			const indent = parseInt((e.composedPath()[1] as HTMLElement).dataset.indent);
+
+			if (indent === 0) {
+				const lineText = RenderLines[newLineNumber].text;
+				const newCursorPosition = RenderLines[newLineNumber - 1].text.length;
+				RenderLines[newLineNumber - 1].text += lineText;
+
+				const linesFront = RenderLines.slice(0, newLineNumber);
+				const linesBehind = RenderLines.slice(newLineNumber + 1, -1);
+
+				RenderLines = linesFront.concat(linesBehind);
+
+				await tick();
+
+				const newLine = document.getElementById('line-index-editable-' + (newLineNumber - 1));
+
+				cursor.setPosition(newLine, 0);
+				for (let i = 0; i < newCursorPosition; i++) {
+					//@ts-ignore not in typescript?
+					cursor.modify('move', 'right', 'character');
+				}
+			} else {
+				RenderLines[newLineNumber].indent--;
+				RenderLines = RenderLines;
+			}
+			return;
+		}
+		if (e.key === 'Tab') {
+			//check tab event as it skips to the next line by default?
 			e.preventDefault();
 
-			const newLineNumber = parseInt((e.composedPath()[1] as HTMLElement).dataset.lineNumber);
-			// let NewRenderLines = [...RenderLines];
-
-			const linesFront = RenderLines.slice(0, newLineNumber);
-			const linesBehind = RenderLines.slice(newLineNumber + 1, -1);
-
-			RenderLines = linesFront.concat(linesBehind);
-
-			await tick();
-
-			const cursor = window.getSelection();
-
-			const newLine = document.getElementById('line-index-editable-' + (newLineNumber - 1));
-			const range = document.createRange();
-
-			range.setStart(newLine, 0);
-			range.collapse(true);
-
-			cursor.removeAllRanges();
-			cursor.addRange(range);
-
-			console.log(cursor);
+			RenderLines[newLineNumber].indent++;
+			RenderLines = RenderLines;
 
 			return;
+		}
+		if (e.key.startsWith('Arrow')) {
+			switch (e.key) {
+				case 'ArrowUp': {
+					e.preventDefault();
+					const newLineNumberDown = newLineNumber - 1;
+					const el = document.getElementById(`line-index-editable-${newLineNumberDown}`);
+					if (newLineNumberDown >= 0) cursor.setPosition(el, 0);
+					break;
+				}
+
+				case 'ArrowDown':
+					e.preventDefault();
+					const newLineNumberUp = newLineNumber + 1;
+					const el = document.getElementById(`line-index-editable-${newLineNumberUp}`);
+					if (newLineNumberUp < RenderLines.length) cursor.setPosition(el, 0);
+					break;
+			}
 		}
 	};
 
@@ -174,33 +208,15 @@
 	$: readFile($currentFile);
 </script>
 
-<div id="editor" class="w-full h-full bg-green-300 overflow-scroll">
-	{#each RenderLines as Line, index (Line.uuid)}
-		<div
-			id="line-index-{index}"
-			class="w-full"
-			on:keydown|stopPropagation={handleInputs}
-			data-line-number={index}
-		>
-			<span class="inline-block w-10 select-none">
-				{index}
-			</span>
-			<span
-				contenteditable="true"
-				spellcheck="false"
-				style="margin-left: {Line.indent * 2}em;"
-				class="active:border-none focus-visible:outline-none content select-text"
-				id="line-index-editable-{index}"
-			>
-				{Line.text}
-			</span>
-		</div>
+<div id="editor" class="w-full h-full bg-gray-700 text-white overflow-y-scroll">
+	{#each RenderLines as line, index (line.uuid)}
+		<LineRenderer on:key={handleInputs} {line} {index} />
 	{/each}
 </div>
 
 <svelte:head>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
 	<link
 		href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap"
 		rel="stylesheet"
@@ -211,16 +227,15 @@
 	div {
 		font-family: Fira Code;
 	}
-	.content {
-		all: unset;
-	}
+
 	#editor::-webkit-scrollbar {
+		@apply bg-transparent;
 		width: 10px;
-		height: 10px;
-		background-color: rgba(255, 255, 255);
 	}
 	#editor::-webkit-scrollbar-thumb {
-		background: rgba(0, 0, 0, 0.548);
+		@apply bg-white;
+		@apply bg-opacity-10;
+		border-radius: 0.5em;
 		width: 5px;
 	}
 </style>

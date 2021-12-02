@@ -15,7 +15,7 @@
 	};
 </script>
 
-<div>
+<div class="bg-gray-700 overflow-hidden">
 	{#each openTabs as currentTab}
 		<Tab />
 	{/each}

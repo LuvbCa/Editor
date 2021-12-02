@@ -12,7 +12,7 @@ const validSendChannels = [
 	"test",
 	"testPerformance",
 ];
-const validListenChannels = ["dirSelected"];
+const validListenChannels = ["dirSelected", "maximized"];
 
 const validBalanceTypes = ["recursiveDir"];
 
@@ -49,13 +49,13 @@ const ipcObject = {
 			if (validSendChannels.includes(channel))
 				return ipcRenderer.sendSync(channel, data);
 
-			console.warn("channel not supported!");
+			console.warn(`channel not supported: ${channel}`);
 		},
 		async: (channel: string, data: any): void => {
 			if (validSendChannels.includes(channel)) {
 				ipcRenderer.send(channel, data);
 			} else {
-				console.warn("channel not supported!");
+				console.warn(`channel not supported: ${channel}`);
 			}
 		},
 	},
@@ -64,15 +64,15 @@ const ipcObject = {
 			// Deliberately strip event as it includes `sender`
 			ipcRenderer.on(channel, (event, ...args) => func(...args));
 		} else {
-			console.log("channel not supported!");
+			console.warn(`channel not supported: ${channel}`);
 		}
 	},
 	balanceLoad: (
 		type: string,
 		input: {
-			[key: string]: any;
+			[key: string]: string | number | boolean;
 		},
-		callback: (...args: any[]) => any
+		callback: (...args: any[]) => void
 	) => {
 		if (!validBalanceTypes.includes(type)) {
 			console.warn("balance type not supported!");
@@ -137,7 +137,7 @@ const fsObject = {
 					root.children[currentEntry.name] = newRead;
 				} catch (e) {
 					// root.children[currentEntry.name] = e;
-					console.warn(e, "----> reading will continue");
+					console.warn(`${e} -> reading will continue`);
 				}
 			}
 		}
@@ -155,3 +155,5 @@ const fsObject = {
 contextBridge.exposeInMainWorld("ipc", ipcObject);
 
 contextBridge.exposeInMainWorld("fs", fsObject);
+
+contextBridge.exposeInMainWorld("isElectron", true);

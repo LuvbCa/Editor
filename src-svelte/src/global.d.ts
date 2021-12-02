@@ -6,6 +6,12 @@ type RecursiveObject = {
 	children?: RecursiveObject[];
 };
 
+interface EditorLine {
+	text: string;
+	indent: number;
+	uuid: number;
+}
+
 interface LayerEntry {
 	name: string;
 	path: string;

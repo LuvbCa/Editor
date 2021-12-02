@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
 
-type Navigator = 'settings' | 'editor';
+type Navigator = 'settings' | 'folder';
 
-export const currentNavigator = writable<Navigator>('editor');
+export const currentSidebarNavigator = writable<Navigator>('folder');
 
 export const currentFile = writable('index.ts');
 

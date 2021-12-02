@@ -45,7 +45,11 @@ ipcMain.on("minimize", (event) => {
 
 ipcMain.on("maximize", (event) => {
 	const win = BrowserWindow.fromWebContents(event.sender);
-	if (win?.isMaximized()) {
+	const isMaximized = win?.isMaximized();
+
+	if (isMaximized == undefined) return;
+
+	if (isMaximized) {
 		win?.unmaximize();
 		return;
 	}
@@ -81,9 +85,14 @@ function registerKeyCombs(win: BrowserWindow) {
 			: win.webContents.openDevTools();
 	});
 
-	if (!ret) {
+	const stayOnTop = globalShortcut.register("CommandOrControl+U", () => {
+		win.isAlwaysOnTop() ? win.setAlwaysOnTop(false) : win.setAlwaysOnTop(true);
+	});
+
+	if (!ret || !stayOnTop) {
 		console.log("registration shortcut failed failed");
 		win.webContents.openDevTools();
+		win.setAlwaysOnTop(true);
 	}
 }
 
@@ -104,6 +113,14 @@ async function createWindow() {
 		//workaround: reset zoom
 		win.webContents.setZoomFactor(1);
 		win.show();
+	});
+
+	win.on("maximize", () => {
+		win.webContents.send("maximized", true);
+	});
+
+	win.on("unmaximize", () => {
+		win.webContents.send("maximized", false);
 	});
 
 	registerKeyCombs(win);
