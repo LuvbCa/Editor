@@ -5,9 +5,24 @@
 	import Settings from '$lib/Settings.svelte';
 	import { currentWorkingDirTree, currentWorkingDirTreeDeepestLayer } from '$lib/store';
 	import Tabcontainer from '$lib/components/Tabcontainer.svelte';
+	import { onMount } from 'svelte';
 
 	// $: console.log($currentWorkingDirTreeDeepestLayer);
 	// $: console.log($currentWorkingDirTree);
+
+	onMount(async () => {
+		const start = await window.fs.streamFile('./index.ts', 'shu');
+
+		window.ipc.listen('shu:data', (data) => {
+			console.log(data);
+		});
+
+		window.ipc.listen('shu:end', () => {
+			console.log('shu ended');
+		});
+
+		start();
+	});
 </script>
 
 <svelte:head>

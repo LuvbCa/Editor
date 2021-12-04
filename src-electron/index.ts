@@ -1,7 +1,12 @@
 import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
 import path from "path";
-
 // create a worker pool using an external worker script
+
+try {
+	createLSP();
+} catch (e) {
+	console.log("ignoring");
+}
 
 app.on("ready", async () => {
 	createWindow();

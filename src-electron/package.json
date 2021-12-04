@@ -5,13 +5,15 @@
 	"main": "index.js",
 	"scripts": {
 		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
-		"start": "electron ./dist/index.js"
+		"start": "electron ./dist/index.js",
+		"lsp": "typescript-language-server --stdio"
 	},
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
 		"@types/electron": "^1.6.10",
-		"electron": "^15.1.0"
+		"electron": "^15.1.0",
+		"typescript-language-server": "^0.8.1"
 	},
 	"dependencies": {
 		"@types/uuid": "^8.3.1",

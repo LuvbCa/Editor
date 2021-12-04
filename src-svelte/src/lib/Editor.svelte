@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { currentFile, currentWorkingDir } from './store';
+	import { currentFile } from './store';
 
 	import Parser, { Language, SyntaxNode } from 'web-tree-sitter';
 	import LineRenderer from './components/LineRenderer.svelte';
-	import { element } from 'svelte/internal';
 
 	let Content: string = '';
 	let RenderLines: EditorLine[] = [];
 
 	const readFile = async (path: string) => {
 		const text = await window.fs.readFile(path);
-		Content = text;
+		// Content = text;
 		RenderLines = await convertTextToLines(text);
 		initalParse();
 	};
@@ -183,10 +182,23 @@
 		}
 	};
 
-	const recursiveTreePrint = (input: SyntaxNode) => {
-		input.children.forEach((element) => {
-			recursiveTreePrint(element);
-		});
+	const recursiveColoring = (input: SyntaxNode) => {
+		if (input.childCount == 0) {
+			RenderLines[input.startPosition.row].styling.push({
+				from: input.startPosition.column,
+				to: input.endPosition.column,
+				style: 'color: red;'
+			});
+
+			return;
+		}
+
+		for (let i = 0; i < input.childCount; i++) {
+			const element = input.child(i);
+			recursiveColoring(element);
+		}
+
+		return;
 	};
 
 	const initalParse = async () => {
@@ -195,14 +207,23 @@
 			Parser.Language.load('tree-sitter-javascript.wasm'),
 			Parser.Language.load('tree-sitter-typescript.wasm')
 		]);
-
 		const parser = new Parser();
-		parser.setLanguage(JavaScript);
+		parser.setLanguage(TypeScript);
 
 		try {
 			const tree = parser.parse(Content);
-			console.log(TypeScript);
-			recursiveTreePrint(tree.rootNode);
+
+			recursiveColoring(tree.rootNode);
+			// for (let i = 0; i < tree.rootNode.childCount; i++) {
+			// 	const currNode = tree.rootNode.child(i);
+
+			// 	const totalLinesAffected = currNode.endPosition.row - currNode.startPosition.row + 1;
+
+			// 	for (let x = 0; x < totalLinesAffected; x++) {
+			// 		RenderLines[currNode.startPosition.row + x].style = 'color: red;';
+			// 	}
+			// }
+			RenderLines = [...RenderLines];
 		} catch (e) {}
 	};
 	$: readFile($currentFile);

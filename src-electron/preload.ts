@@ -150,6 +150,39 @@ const fsObject = {
 		});
 		return file;
 	},
+
+	streamFile: async (readPath: string, streamIdentifier: string) => {
+		try {
+			await fs.promises.access(readPath);
+
+			validListenChannels.push(
+				`${streamIdentifier}:data`,
+				`${streamIdentifier}:end`
+			);
+
+			return () => {
+				const stream = fs.createReadStream(readPath);
+
+				stream.on("data", (chunk) => {
+					ipcRenderer.emit(`${streamIdentifier}:data`, chunk);
+				});
+
+				stream.on("error", (error) => {
+					ipcRenderer.emit("error", error);
+				});
+
+				stream.on("end", () => {
+					ipcRenderer.emit(`${streamIdentifier}:end`);
+				});
+			};
+		} catch (e) {
+			ipcRenderer.emit("error", e);
+
+			return () => {
+				console.error(e);
+			};
+		}
+	},
 };
 
 contextBridge.exposeInMainWorld("ipc", ipcObject);

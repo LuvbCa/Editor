@@ -35,6 +35,9 @@
 		id="line-index-editable-{index}"
 	>
 		{line.text}
+		{#if line.styling}
+			color
+		{/if}
 	</span>
 </div>
 

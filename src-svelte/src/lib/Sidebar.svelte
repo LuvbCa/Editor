@@ -45,13 +45,9 @@
 <div id="wrapper" class="relative h-full w-full flex flex-col items-center bg-gray-900">
 	<div class="h-full w-full max-h-full overflow-hidden">
 		{#if $currentSidebarNavigator === 'folder'}
-			<div in:fly={{ y: 1000, delay: 0, duration: 350, opacity: 1 }}>
-				<FolderBar />
-			</div>
+			<FolderBar />
 		{:else if $currentSidebarNavigator === 'settings'}
-			<div transition:fly>
-				<Settings />
-			</div>
+			<Settings />
 		{/if}
 	</div>
 	<div id="tabs" class="w-5/6 flex flex-row bg-gray-700 h-12 rounded-lg shadow-xl mb-5 px-2">

@@ -10,6 +10,11 @@ interface EditorLine {
 	text: string;
 	indent: number;
 	uuid: number;
+	styling?: {
+		from: number;
+		to: number;
+		style: string;
+	}[];
 }
 
 interface LayerEntry {
@@ -47,5 +52,6 @@ interface Window {
 		readDir: (readPath: string) => Promise<RecursiveObject[]>;
 		readFile: (readPath: string) => Promise<string>;
 		layerReadDir: (readPath: string, maxLayer: number, currentLayer: number) => Promise<LayerDir>;
+		streamFile: (readPath: string, streamIdentifier: string) => () => void;
 	};
 }
