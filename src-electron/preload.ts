@@ -14,6 +14,8 @@ const validSendChannels = [
 ];
 const validListenChannels = ["dirSelected", "maximized"];
 
+const validInternChannels = /[A-Za-z]\:(data|end)/g;
+
 const validBalanceTypes = ["recursiveDir"];
 
 type RecursiveObject = {
@@ -60,6 +62,9 @@ const ipcObject = {
 		},
 	},
 	listen: (channel: string, func: (...args: any[]) => void): void => {
+		// if (validInternChannels.includes(channel)) {
+		// 	ipcRenderer.on(channel, (...args) => func(...args));
+		// }
 		if (validListenChannels.includes(channel)) {
 			// Deliberately strip event as it includes `sender`
 			ipcRenderer.on(channel, (event, ...args) => func(...args));
@@ -149,39 +154,6 @@ const fsObject = {
 			encoding: "utf-8",
 		});
 		return file;
-	},
-
-	streamFile: async (readPath: string, streamIdentifier: string) => {
-		try {
-			await fs.promises.access(readPath);
-
-			validListenChannels.push(
-				`${streamIdentifier}:data`,
-				`${streamIdentifier}:end`
-			);
-
-			return () => {
-				const stream = fs.createReadStream(readPath);
-
-				stream.on("data", (chunk) => {
-					ipcRenderer.emit(`${streamIdentifier}:data`, chunk);
-				});
-
-				stream.on("error", (error) => {
-					ipcRenderer.emit("error", error);
-				});
-
-				stream.on("end", () => {
-					ipcRenderer.emit(`${streamIdentifier}:end`);
-				});
-			};
-		} catch (e) {
-			ipcRenderer.emit("error", e);
-
-			return () => {
-				console.error(e);
-			};
-		}
 	},
 };
 

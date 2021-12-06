@@ -52,6 +52,5 @@ interface Window {
 		readDir: (readPath: string) => Promise<RecursiveObject[]>;
 		readFile: (readPath: string) => Promise<string>;
 		layerReadDir: (readPath: string, maxLayer: number, currentLayer: number) => Promise<LayerDir>;
-		streamFile: (readPath: string, streamIdentifier: string) => () => void;
 	};
 }

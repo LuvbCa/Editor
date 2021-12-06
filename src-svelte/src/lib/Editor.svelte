@@ -8,9 +8,11 @@
 	let Content: string = '';
 	let RenderLines: EditorLine[] = [];
 
+	$: convertTextToLines(Content);
+
 	const readFile = async (path: string) => {
 		const text = await window.fs.readFile(path);
-		// Content = text;
+		Content = text;
 		RenderLines = await convertTextToLines(text);
 		initalParse();
 	};
