@@ -1,4 +1,5 @@
 <script lang="ts">
+	//weh
 	import { createEventDispatcher } from 'svelte';
 
 	export let line: EditorLine;
