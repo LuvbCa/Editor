@@ -11,17 +11,21 @@ interface EditorLine {
 	indent: number;
 }
 
+interface Point {
+	row: number;
+	column: number;
+}
+
 interface SyntaxLine {
-	content: {
-		type: string;
-		endPosition: Parser.Point;
-		startPosition: Parser.Point;
-	}[];
+	type: string;
+	endPosition: Point;
+	startPosition: Point;
+	text: string;
 }
 
 interface MetaLine {
 	render: EditorLine;
-	syntax: SyntaxLine;
+	syntax: SyntaxLine[];
 	uuid: number;
 }
 

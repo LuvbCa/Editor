@@ -25,9 +25,9 @@
 		const initialTree = await initialParse(initialtext);
 
 		const renderLines = await constructRenderLines(initialtext);
-		const syntaxLines = await constructSyntaxLines(initialTree.rootNode);
 
-		console.log(syntaxLines.length === renderLines.length);
+		const syntaxLines = Array.from<any, SyntaxLine[]>({ length: renderLines.length }, () => []);
+		await constructSyntaxLines(initialTree.rootNode, syntaxLines);
 
 		MergedLines = await mergeRenderAndSyntaxLines(renderLines, syntaxLines);
 	};
@@ -159,35 +159,20 @@
 		return lines;
 	};
 
-	const constructSyntaxLines = async (
-		node: SyntaxNode,
-		lines: SyntaxLine[] = []
-	): Promise<SyntaxLine[]> => {
-		const exsistingLine = lines.at(node.startPosition.row);
-
-		if (!exsistingLine) {
-			lines[node.startPosition.row] = { content: [] };
+	const constructSyntaxLines = async (node: SyntaxNode, lines: SyntaxLine[][]) => {
+		if (node.isNamed()) {
+			const { type, endPosition, startPosition, text } = node;
+			lines[startPosition.row].push({ type, endPosition, startPosition, text });
 		}
 
-		if (node.childCount == 0) {
-			lines[node.startPosition.row].content.push({
-				type: node.type,
-				endPosition: node.endPosition,
-				startPosition: node.startPosition
-			});
-			return lines;
+		for (const child of node.children) {
+			constructSyntaxLines(child, lines);
 		}
-
-		for (let i = 0; i < node.childCount; i++) {
-			constructSyntaxLines(node.child(i), lines);
-		}
-
-		return lines;
 	};
 
 	const mergeRenderAndSyntaxLines = async (
 		renderLines: EditorLine[],
-		syntaxLines: SyntaxLine[]
+		syntaxLines: SyntaxLine[][]
 	): Promise<MetaLine[]> => {
 		if (renderLines.length !== syntaxLines.length)
 			throw new Error('different sized render and syntax lines cannot continue to read');
@@ -222,7 +207,7 @@
 	$: readFile($currentFile);
 </script>
 
-<div id="editor" class="w-full h-full bg-gray-700 text-white overflow-y-scroll">
+<div id="editor" class="pl-2 w-full h-full bg-gray-700 text-white overflow-y-scroll">
 	{#each MergedLines as line, index (line.uuid)}
 		<LineRenderer on:keydown={handleInputs} {line} {index} />
 	{/each}

@@ -7,8 +7,26 @@
 	let highlighted = false;
 
 	const constructBlocks = () => {
+		const blocks: {
+			text: string;
+			style: string;
+		}[] = [];
 		const rawText = line.render.text;
+		const syntax = line.syntax;
+
+		for (let i = 0; i < syntax.length; i++) {
+			const element = syntax[i];
+
+			blocks.push({
+				text: element.text,
+				style: ''
+			});
+		}
+
+		return blocks;
 	};
+
+	const blocks = constructBlocks();
 </script>
 
 <div
@@ -27,13 +45,11 @@
 		contenteditable="true"
 		spellcheck="false"
 		style="margin-left: {line.render.indent * 2}em;"
-		class="active:border-none focus-visible:outline-none content select-text"
+		class="active:border-none focus-visible:outline-none select-text"
 		id="line-index-editable-{index}"
 	>
 		{#each blocks as block}
-			<span>
-				{block + ' '}
-			</span>
+			<span style={block.style}>{block.text}</span>
 		{/each}
 	</span>
 </div>
