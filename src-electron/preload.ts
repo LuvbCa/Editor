@@ -47,6 +47,9 @@ ipcRenderer.on("meta", (event, meta) => {
 
 const ipcObject = {
 	send: {
+		/**
+		 * @deprecated do not use!! will be removed before 0.2.0
+		 */
 		sync: <T extends any>(channel: string, data: any): T | void => {
 			if (validSendChannels.includes(channel))
 				return ipcRenderer.sendSync(channel, data);
@@ -153,6 +156,7 @@ const fsObject = {
 		const file = await fs.promises.readFile(readPath, {
 			encoding: "utf-8",
 		});
+
 		return file;
 	},
 };

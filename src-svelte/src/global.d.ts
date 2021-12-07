@@ -9,12 +9,20 @@ type RecursiveObject = {
 interface EditorLine {
 	text: string;
 	indent: number;
-	uuid: number;
-	styling?: {
-		from: number;
-		to: number;
-		style: string;
+}
+
+interface SyntaxLine {
+	content: {
+		type: string;
+		endPosition: Parser.Point;
+		startPosition: Parser.Point;
 	}[];
+}
+
+interface MetaLine {
+	render: EditorLine;
+	syntax: SyntaxLine;
+	uuid: number;
 }
 
 interface LayerEntry {

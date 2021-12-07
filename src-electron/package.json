@@ -12,7 +12,7 @@
 	"license": "ISC",
 	"devDependencies": {
 		"@types/electron": "^1.6.10",
-		"electron": "^15.1.0",
+		"electron": "^16.0.4",
 		"typescript-language-server": "^0.8.1"
 	},
 	"dependencies": {
