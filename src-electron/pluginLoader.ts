@@ -2,6 +2,7 @@ import path from "path";
 import { access, mkdir, opendir, readFile } from "fs/promises";
 import { homedir } from "os";
 import { EventEmitter } from "events";
+import { BrowserWindow } from "electron";
 
 class Plugin extends EventEmitter {
 	manifest: any;
@@ -81,4 +82,8 @@ export const pluginLoader = async () => {
 	}
 };
 
-export const loadPlugin = (plugin: Plugin) => {};
+export const loadPlugin = (plugin: Plugin, window?: BrowserWindow) => {
+	//TODOOO: expose global references to editor windows
+	//TODOOOO: expose needed apis to PluginHandler -> events like: editorLoad, editorChanged, editorInput ==> subscribing to handler instead of directly to the event from svelte/dom
+	//TODO: make every plugin load in to multithreaded context?
+};

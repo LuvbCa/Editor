@@ -1,4 +1,12 @@
-import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
+import {
+	app,
+	BrowserWindow,
+	ipcMain,
+	dialog,
+	globalShortcut,
+	nativeImage,
+	NativeImage,
+} from "electron";
 import path from "path";
 import { pluginLoader } from "./pluginLoader";
 import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
@@ -25,11 +33,15 @@ app.on("window-all-closed", () => {
 });
 
 const createWindow = async () => {
+	const icon = nativeImage.createFromPath("./assets/icon.png");
+
 	const win = new BrowserWindow({
 		width: 800,
 		height: 600,
 		frame: false,
 		show: false,
+		icon,
+		transparent: true,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
@@ -37,24 +49,11 @@ const createWindow = async () => {
 		},
 	});
 
-	const loadWin = new BrowserWindow({
-		width: 300,
-		height: 300,
-		frame: false,
-		show: true,
-		resizable: false,
-		webPreferences: {
-			nodeIntegration: false,
-			contextIsolation: true,
-		},
-	});
-
-	loadWin.loadFile("./startup/index.html");
+	// const loadWin = displayLoadWindow(icon);
 
 	await pluginLoader();
-	await sleep(10000);
 
-	loadWin.close();
+	// loadWin.close();
 
 	win.once("ready-to-show", () => {
 		//workaround: reset zoom
@@ -76,4 +75,23 @@ const createWindow = async () => {
 	win.webContents.openDevTools();
 
 	win.loadURL("http://localhost:3000/");
+};
+
+const displayLoadWindow = (icon: NativeImage): BrowserWindow => {
+	const loadWin = new BrowserWindow({
+		width: 300,
+		height: 300,
+		frame: false,
+		show: true,
+		icon,
+		resizable: false,
+		webPreferences: {
+			nodeIntegration: false,
+			contextIsolation: true,
+		},
+	});
+
+	loadWin.loadFile("../assets/index.html");
+
+	return loadWin;
 };
