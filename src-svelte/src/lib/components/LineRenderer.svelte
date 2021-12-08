@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	export let line: MetaLine;
 	export let index: number;
 
@@ -18,7 +16,7 @@
 			const element = syntax[i];
 
 			blocks.push({
-				text: element.text,
+				text: rawText.slice(element.startPosition.column, element.endPosition.column),
 				style: ''
 			});
 		}

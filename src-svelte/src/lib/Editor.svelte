@@ -162,6 +162,8 @@
 	const constructSyntaxLines = async (node: SyntaxNode, lines: SyntaxLine[][]) => {
 		if (node.isNamed()) {
 			const { type, endPosition, startPosition, text } = node;
+
+			console.log(node.startIndex, node.endIndex);
 			lines[startPosition.row].push({ type, endPosition, startPosition, text });
 		}
 
