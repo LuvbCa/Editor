@@ -10,6 +10,8 @@ import {
 import path from "path";
 import { pluginLoader } from "./pluginLoader";
 import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
+
+import { fork } from "child_process";
 // create a worker pool using an external worker script
 
 app.on("ready", async (event, info) => {
