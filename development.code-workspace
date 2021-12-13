@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"name": "plugin-runtime",
+			"path": "./plugin-runtime"
+		},
+		{
+			"name": "backend",
+			"path": "./electron"
+		},
+		{
+			"name": "frontend",
+			"path": "./svelte"
+		}
+	],
+	"settings": {
+		"deno.enable": true,
+		"deno.lint": true,
+		"deno.unstable": true
+	}
+}

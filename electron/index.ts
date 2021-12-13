@@ -53,6 +53,7 @@ const createWindow = async () => {
 
 	// const loadWin = displayLoadWindow(icon);
 
+	await pluginR
 	await pluginLoader();
 
 	// loadWin.close();

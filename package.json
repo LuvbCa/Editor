@@ -1,7 +1,9 @@
 {
-	"name": "athenaide-monorepo",
+	"name": "ny-athena-monorepo",
+	"version": "0.0.1-alpha",
 	"workspaces": [
-		"src-electron/*",
-		"src-svelte/*"
+		"electron/*",
+		"svelte/*",
+		"plugin-runtime/*"
 	]
 }
