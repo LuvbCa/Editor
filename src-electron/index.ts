@@ -8,7 +8,7 @@ import {
 	NativeImage,
 } from "electron";
 import path from "path";
-import { pluginLoader } from "./pluginLoader";
+import { pluginLoader } from "./assets/plugin/loader";
 import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
 
 import { fork } from "child_process";

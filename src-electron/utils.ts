@@ -1,4 +1,3 @@
-import { globalShortcut } from "@tauri-apps/api";
 import {
 	IpcMain,
 	BrowserWindow,
