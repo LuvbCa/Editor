@@ -3,26 +3,31 @@
 	import Editor from '$lib/Editor.svelte';
 	import Titlebar from '$lib/Titlebar.svelte';
 	import Settings from '$lib/Settings.svelte';
-	import { currentWorkingDirTree, currentWorkingDirTreeDeepestLayer } from '$lib/store';
+	import {
+		currentSidebarNavigator,
+		currentFile,
+		currentWorkingDir,
+		currentWorkingDirTree,
+		currentWorkingDirTreeDeepestLayer
+	} from '$lib/store';
 	import Tabcontainer from '$lib/components/Tabcontainer.svelte';
 	import { onMount } from 'svelte';
 
-	// $: console.log($currentWorkingDirTreeDeepestLayer);
-	// $: console.log($currentWorkingDirTree);
+	const logStores = (...inputs: any[]) => {
+		console.log('--- STORE UPDATE ---');
+		for (const input of inputs) {
+			console.log(input);
+		}
+		console.log('--- STORE UPDATE FINSHED ---');
+	};
 
-	onMount(async () => {
-		const start = await window.fs.streamFile('./index.ts', 'shu');
-
-		window.ipc.listen('shu:data', (data) => {
-			console.log(data);
-		});
-
-		window.ipc.listen('shu:end', () => {
-			console.log('shu ended');
-		});
-
-		start();
-	});
+	// $: logStores(
+	// 	$currentWorkingDirTreeDeepestLayer,
+	// 	$currentWorkingDirTree,
+	// 	$currentWorkingDir,
+	// 	$currentFile,
+	// 	$currentSidebarNavigator
+	// );
 </script>
 
 <svelte:head>

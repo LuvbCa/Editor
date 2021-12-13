@@ -1,14 +1,20 @@
-import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron";
+import {
+	app,
+	BrowserWindow,
+	ipcMain,
+	dialog,
+	globalShortcut,
+	nativeImage,
+	NativeImage,
+} from "electron";
 import path from "path";
+import { pluginLoader } from "./assets/plugin/loader";
+import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
+
+import { fork } from "child_process";
 // create a worker pool using an external worker script
 
-try {
-	createLSP();
-} catch (e) {
-	console.log("ignoring");
-}
-
-app.on("ready", async () => {
+app.on("ready", async (event, info) => {
 	createWindow();
 
 	app.on("activate", () => {
@@ -28,91 +34,28 @@ app.on("window-all-closed", () => {
 	}
 });
 
-ipcMain.on("dirDialog", async (event) => {
-	const result = await dialog.showOpenDialog(
-		BrowserWindow.fromWebContents(event.sender)!,
-		{
-			properties: ["openDirectory"],
-		}
-	);
-	if (result.canceled) return;
-	event.reply("dirSelected", result.filePaths[0]);
-});
+const createWindow = async () => {
+	const icon = nativeImage.createFromPath("./assets/icon.png");
 
-ipcMain.on("close", (event) => {
-	BrowserWindow.fromWebContents(event.sender)?.close();
-	app.quit();
-});
-
-ipcMain.on("minimize", (event) => {
-	BrowserWindow.fromWebContents(event.sender)?.minimize();
-});
-
-ipcMain.on("maximize", (event) => {
-	const win = BrowserWindow.fromWebContents(event.sender);
-	const isMaximized = win?.isMaximized();
-
-	if (isMaximized == undefined) return;
-
-	if (isMaximized) {
-		win?.unmaximize();
-		return;
-	}
-	win?.maximize();
-});
-
-ipcMain.on("testPerformance", (event) => {
-	let p0 = 0;
-	let p1 = 0;
-
-	p0 = performance.now();
-	const winSender = BrowserWindow.fromWebContents(event.sender);
-	p1 = performance.now();
-
-	console.log(p1 - p0 + "ms");
-
-	console.log(" // ");
-
-	p0 = performance.now();
-	const winFocused = BrowserWindow.getFocusedWindow();
-	p1 = performance.now();
-	console.log(p1 - p0 + "ms");
-});
-
-ipcMain.on("test", (event, type: string, uuid: string) => {
-	event.reply(type + uuid, "amongus");
-});
-
-function registerKeyCombs(win: BrowserWindow) {
-	const ret = globalShortcut.register("CommandOrControl+X", () => {
-		win.webContents.isDevToolsOpened()
-			? win.webContents.closeDevTools()
-			: win.webContents.openDevTools();
-	});
-
-	const stayOnTop = globalShortcut.register("CommandOrControl+U", () => {
-		win.isAlwaysOnTop() ? win.setAlwaysOnTop(false) : win.setAlwaysOnTop(true);
-	});
-
-	if (!ret || !stayOnTop) {
-		console.log("registration shortcut failed failed");
-		win.webContents.openDevTools();
-		win.setAlwaysOnTop(true);
-	}
-}
-
-async function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
 		height: 600,
 		frame: false,
 		show: false,
+		icon,
+		transparent: true,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
 			preload: path.join(__dirname, "preload.js"),
 		},
 	});
+
+	// const loadWin = displayLoadWindow(icon);
+
+	await pluginLoader();
+
+	// loadWin.close();
 
 	win.once("ready-to-show", () => {
 		//workaround: reset zoom
@@ -128,9 +71,29 @@ async function createWindow() {
 		win.webContents.send("maximized", false);
 	});
 
-	registerKeyCombs(win);
+	registerKeyCombs(win, globalShortcut);
+	registerIpcEvents(ipcMain, dialog, app);
 
 	win.webContents.openDevTools();
 
 	win.loadURL("http://localhost:3000/");
-}
+};
+
+const displayLoadWindow = (icon: NativeImage): BrowserWindow => {
+	const loadWin = new BrowserWindow({
+		width: 300,
+		height: 300,
+		frame: false,
+		show: true,
+		icon,
+		resizable: false,
+		webPreferences: {
+			nodeIntegration: false,
+			contextIsolation: true,
+		},
+	});
+
+	loadWin.loadFile("../assets/index.html");
+
+	return loadWin;
+};

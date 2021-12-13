@@ -1,86 +1,39 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { currentFile } from './store';
 
-	import Parser, { Language, SyntaxNode } from 'web-tree-sitter';
+	import Parser, { init, Language, SyntaxNode, Tree } from 'web-tree-sitter';
 	import LineRenderer from './components/LineRenderer.svelte';
+	import Tab from './components/Tab.svelte';
 
-	let Content: string = '';
 	let RenderLines: EditorLine[] = [];
+	let SyntaxLines: SyntaxLine[] = [];
+
+	let MergedLines: MetaLine[] = [];
+
+	/**
+	 * algorithm for coloring:
+	 * 1. construct inital syntax tree based on read content
+	 * 2. construct Renderlines with all needed meta-data from this syntax Tree
+	 * 3. render the RenderLines according to this Data
+	 * 4. on Keydown event figure out which element is selected and add character on the right place
+	 * 5. reparse the tree and update needed Lines
+	 */
 
 	const readFile = async (path: string) => {
-		const text = await window.fs.readFile(path);
-		// Content = text;
-		RenderLines = await convertTextToLines(text);
-		initalParse();
+		const initialtext = await window.fs.readFile(path);
+		const initialTree = await initialParse(initialtext);
+
+		const renderLines = await constructRenderLines(initialtext);
+
+		const syntaxLines = Array.from<any, SyntaxLine[]>({ length: renderLines.length }, () => []);
+		await constructSyntaxLines(initialTree.rootNode, syntaxLines);
+
+		MergedLines = await mergeRenderAndSyntaxLines(renderLines, syntaxLines);
 	};
 
-	//not really uuid
-	const NoReUUID = () => Math.random() * 100 * Math.random();
-
-	const convertTextToLines = async (text: string): Promise<EditorLine[]> => {
-		const lines: EditorLine[] = [];
-		const matches = text.matchAll(/\r\n/g);
-		const matchesArray: RegExpMatchArray[] = [];
-		for (const match of matches) {
-			matchesArray.push(match);
-		}
-
-		for (let i = 0; i < matchesArray.length; i++) {
-			const element = matchesArray[i];
-			const prevElement = i == 0 ? null : matchesArray[i - 1];
-
-			if (prevElement) {
-				const slicedInput = element.input.slice(prevElement.index, element.index);
-
-				const tabs = slicedInput.matchAll(/\t/g);
-				const tabsArray = [];
-
-				const sanitizedSlicedInput = slicedInput.replaceAll('\r\n', '').replaceAll('\t', '');
-				for (const tab of tabs) {
-					tabsArray.push(tab);
-				}
-
-				lines.push({
-					indent: tabsArray.length,
-					text: sanitizedSlicedInput,
-					uuid: NoReUUID()
-				});
-			} else {
-				const slicedInput = element.input.slice(0, element.index);
-
-				lines.push({
-					indent: 0,
-					text: slicedInput,
-					uuid: NoReUUID()
-				});
-			}
-		}
-		return lines;
-	};
-
-	const convertLinesToText = async (lines: EditorLine[]): Promise<string> => {
-		let text = '';
-
-		for (let i = 0; i < lines.length; i++) {
-			let subText = '';
-			const element = lines[i];
-
-			for (let x = 0; x < element.indent; x++) {
-				subText += '\t';
-			}
-
-			subText += element.text + '\r\n';
-
-			text += subText;
-		}
-		return text;
-	};
-
-	const handleInputs = async (
-		event: CustomEvent<KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }>
-	) => {
-		const e = event.detail;
+	const handleInputs: svelte.JSX.KeyboardEventHandler<HTMLDivElement> = async (event) => {
+		const e = event;
 
 		const newLineNumber = parseInt((e.composedPath()[1] as HTMLElement).dataset.line);
 		const cursor = window.getSelection();
@@ -182,56 +135,83 @@
 		}
 	};
 
-	const recursiveColoring = (input: SyntaxNode) => {
-		if (input.childCount == 0) {
-			RenderLines[input.startPosition.row].styling.push({
-				from: input.startPosition.column,
-				to: input.endPosition.column,
-				style: 'color: red;'
+	const uuid = () => Math.random() * Math.random() * 100;
+
+	//faster then convertTextToLines 40x - 120x ==> from 40ms to almost 0ms woah
+	const constructRenderLines = async (text: string): Promise<EditorLine[]> => {
+		const lines: EditorLine[] = [];
+		const matches = [...text.matchAll(/\r\n/g)];
+
+		for (let i = 0; i < matches.length; i++) {
+			const element = matches[i];
+			const prevElement = matches.at(i - 1);
+
+			const slicedInput = element.input.slice(prevElement ? prevElement.index : 0, element.index);
+
+			const tabs = [...slicedInput.matchAll(/\t/g)].length;
+			const sanitizedSlicedInput = slicedInput.replaceAll('\r\n', '').replaceAll('\t', '');
+
+			lines.push({
+				indent: tabs,
+				text: sanitizedSlicedInput
 			});
-
-			return;
 		}
-
-		for (let i = 0; i < input.childCount; i++) {
-			const element = input.child(i);
-			recursiveColoring(element);
-		}
-
-		return;
+		return lines;
 	};
 
-	const initalParse = async () => {
+	const constructSyntaxLines = async (node: SyntaxNode, lines: SyntaxLine[][]) => {
+		if (node.isNamed()) {
+			const { type, endPosition, startPosition, text } = node;
+
+			console.log(node.startIndex, node.endIndex);
+			lines[startPosition.row].push({ type, endPosition, startPosition, text });
+		}
+
+		for (const child of node.children) {
+			constructSyntaxLines(child, lines);
+		}
+	};
+
+	const mergeRenderAndSyntaxLines = async (
+		renderLines: EditorLine[],
+		syntaxLines: SyntaxLine[][]
+	): Promise<MetaLine[]> => {
+		if (renderLines.length !== syntaxLines.length)
+			throw new Error('different sized render and syntax lines cannot continue to read');
+
+		const merged: MetaLine[] = [];
+		for (let i = 0; i < renderLines.length; i++) {
+			const render = renderLines[i];
+			const syntax = syntaxLines[i];
+
+			merged.push({
+				render,
+				syntax,
+				uuid: uuid()
+			});
+		}
+		return merged;
+	};
+
+	const initialParse = async (content: string) => {
 		await Parser.init();
 		const [JavaScript, TypeScript] = await Promise.all([
 			Parser.Language.load('tree-sitter-javascript.wasm'),
 			Parser.Language.load('tree-sitter-typescript.wasm')
 		]);
+
 		const parser = new Parser();
 		parser.setLanguage(TypeScript);
 
-		try {
-			const tree = parser.parse(Content);
-
-			recursiveColoring(tree.rootNode);
-			// for (let i = 0; i < tree.rootNode.childCount; i++) {
-			// 	const currNode = tree.rootNode.child(i);
-
-			// 	const totalLinesAffected = currNode.endPosition.row - currNode.startPosition.row + 1;
-
-			// 	for (let x = 0; x < totalLinesAffected; x++) {
-			// 		RenderLines[currNode.startPosition.row + x].style = 'color: red;';
-			// 	}
-			// }
-			RenderLines = [...RenderLines];
-		} catch (e) {}
+		return parser.parse(content);
 	};
+
 	$: readFile($currentFile);
 </script>
 
-<div id="editor" class="w-full h-full bg-gray-700 text-white overflow-y-scroll">
-	{#each RenderLines as line, index (line.uuid)}
-		<LineRenderer on:key={handleInputs} {line} {index} />
+<div id="editor" class="pl-2 w-full h-full bg-gray-700 text-white overflow-y-scroll">
+	{#each MergedLines as line, index (line.uuid)}
+		<LineRenderer on:keydown={handleInputs} {line} {index} />
 	{/each}
 </div>
 
