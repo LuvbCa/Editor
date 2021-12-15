@@ -7,10 +7,10 @@ interface NatheneGlobal {
 }
 
 /**
- * `parseAtheneConfig` needs to be run before this can be access
+ * `parseAtheneConfig` needs to be run before this can be accessed
  * `parseAtheneConfig` can also be run to make this up-to-date
  */
-export let NatheneGlobal: NatheneGlobal | null = null;
+export let NatheneGlobal: NatheneGlobal;
 
 /**
  * needs to be run before NatheneGlobal is set!

@@ -4,24 +4,11 @@ import { homedir } from "os";
 import { v4 as uuidv4 } from "uuid";
 import { NatheneGlobal } from "../../globals";
 
-interface Plugin {
-	name: string;
-	entryPoint: string;
-	version: string;
-}
-
-interface PluginIdentifier {
-	name: string;
-	uuid: string;
-}
-interface PluginCode {
-	onPluginRegistered: (pluginIdentifier: PluginIdentifier) => {};
-	[key: string | symbol | number]: any;
-}
+import { PluginManifest, PluginIdentifier, PluginCode } from "./types";
 
 // TODO: run this async after preloading for plugins finshed => dispatch to worker thread?
 export const pluginLoader = async () => {
-	const allPlugins: Plugin[] = [];
+	const allPlugins: PluginManifest[] = [];
 
 	console.log("start parsing plugins");
 
@@ -62,7 +49,7 @@ export const pluginLoader = async () => {
 	}
 };
 
-const checkManifest = (input: any): input is Plugin => {
+const checkManifest = (input: any): input is PluginManifest => {
 	if (typeof input.name !== "string") return false;
 	if (typeof input.entryPoint !== "string") return false;
 	if (typeof input.version !== "string") return false;
@@ -76,7 +63,7 @@ const checkPlugin = (input: any): input is PluginCode => {
 	return true;
 };
 
-const loadPlugin = async (plugin: Plugin) => {
+const loadPlugin = async (plugin: PluginManifest) => {
 	//TODOOO: expose global references to editor windows
 	//TODOOOO: expose needed apis to PluginHandler -> events like: editorLoad, editorChanged, editorInput ==> subscribing to handler instead of directly to the event from svelte/dom
 	//TODO: make every plugin load in to multithreaded context
