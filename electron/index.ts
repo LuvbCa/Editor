@@ -7,12 +7,10 @@ import {
 	nativeImage,
 	NativeImage,
 } from "electron";
+import { parseNatheneConfig } from "./globals";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
 import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
-
-import { fork } from "child_process";
-// create a worker pool using an external worker script
 
 app.on("ready", async (event, info) => {
 	createWindow();
@@ -35,7 +33,7 @@ app.on("window-all-closed", () => {
 });
 
 const createWindow = async () => {
-	const icon = nativeImage.createFromPath("./assets/icon.png");
+	const icon = nativeImage.createFromPath("./assets/loading_window/icon.png");
 
 	const win = new BrowserWindow({
 		width: 800,
@@ -47,15 +45,14 @@ const createWindow = async () => {
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
-			preload: path.join(__dirname, "preload.js"),
+			preload: path.join(__dirname, "assets", "preload", "preload.js"),
 		},
 	});
 
 	// const loadWin = displayLoadWindow(icon);
+	await parseNatheneConfig();
 
-	await pluginR
 	await pluginLoader();
-
 	// loadWin.close();
 
 	win.once("ready-to-show", () => {
@@ -74,8 +71,6 @@ const createWindow = async () => {
 
 	registerKeyCombs(win, globalShortcut);
 	registerIpcEvents(ipcMain, dialog, app);
-
-	win.webContents.openDevTools();
 
 	win.loadURL("http://localhost:3000/");
 };

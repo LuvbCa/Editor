@@ -1,20 +1,28 @@
 import path from "path";
-import { mkdir, opendir, readFile, writeFile } from "fs/promises";
+import { mkdir, opendir, readFile } from "fs/promises";
 import { homedir } from "os";
-import type { BrowserWindow } from "electron";
-import fetch from "node-fetch";
-import AdmZip from "adm-zip";
-import { spawn } from "child_process";
-import { EventEmitter } from "events";
-import { DenoWorker } from "deno-vm";
+import { v4 as uuidv4 } from "uuid";
+import { NatheneGlobal } from "../../globals";
 
 interface Plugin {
 	name: string;
 	entryPoint: string;
 	version: string;
 }
+
+interface PluginIdentifier {
+	name: string;
+	uuid: string;
+}
+interface PluginCode {
+	onPluginRegistered: (pluginIdentifier: PluginIdentifier) => {};
+	[key: string | symbol | number]: any;
+}
+
 // TODO: run this async after preloading for plugins finshed => dispatch to worker thread?
-export const pluginLoader = async (pluginMaster) => {
+export const pluginLoader = async () => {
+	const allPlugins: Plugin[] = [];
+
 	console.log("start parsing plugins");
 
 	const pluginPath = path.join(homedir(), ".editor", "plugins");
@@ -54,23 +62,26 @@ export const pluginLoader = async (pluginMaster) => {
 	}
 };
 
-const checkManifest = (pluginManifest: any): pluginManifest is Plugin => {
-	if (typeof pluginManifest.name !== "string") return false;
-	if (typeof pluginManifest.entryPoint !== "string") return false;
-	if (typeof pluginManifest.version !== "string") return false;
+const checkManifest = (input: any): input is Plugin => {
+	if (typeof input.name !== "string") return false;
+	if (typeof input.entryPoint !== "string") return false;
+	if (typeof input.version !== "string") return false;
 
+	return true;
+};
+
+const checkPlugin = (input: any): input is PluginCode => {
+	if (typeof input !== "object") return false;
+	if (!(input["onPluginRegistered"] instanceof Function)) return false;
 	return true;
 };
 
 const loadPlugin = async (plugin: Plugin) => {
 	//TODOOO: expose global references to editor windows
 	//TODOOOO: expose needed apis to PluginHandler -> events like: editorLoad, editorChanged, editorInput ==> subscribing to handler instead of directly to the event from svelte/dom
-	//TODO: make every plugin load in to multithreaded context?
-	/**
-	 * Every Plugin gets no permission from deno!
-	 * can request more resources via preload script
-	 * --> once running, plugins can't request more resources
-	 */
+	//TODO: make every plugin load in to multithreaded context
+
+	console.log(NatheneGlobal);
 
 	const absEntryPointPath = path.join(
 		homedir(),
@@ -79,15 +90,15 @@ const loadPlugin = async (plugin: Plugin) => {
 		plugin.name,
 		plugin.entryPoint
 	);
-	const absRuntimePath = path.join(
-		homedir(),
-		".editor",
-		"plugin_runtime",
-		plugin.runtime,
-		"deno"
-	);
-	const code = await readFile(absEntryPointPath, "utf-8");
-	const vm = new DenoWorker(code, {
-		denoExecutable: absRuntimePath,
-	});
+
+	const code = require(absEntryPointPath);
+
+	if (!checkPlugin(code)) return;
+
+	const pluginIdentifer: PluginIdentifier = {
+		uuid: uuidv4(),
+		name: `${plugin.name}-${plugin.version}`,
+	};
+
+	code.onPluginRegistered(pluginIdentifer);
 };

@@ -24,6 +24,7 @@ importers:
       node-fetch: ^2.6.6
       node-gyp: ^8.4.1
       piscina: ^3.1.0
+      tsc-hooks: ^1.1.1
       typescript: ^4.5.3
       typescript-language-server: ^0.8.1
       uuid: ^8.3.2
@@ -51,6 +52,7 @@ importers:
       '@types/electron': 1.6.10
       electron: 16.0.4
       electron-rebuild: 3.2.5
+      tsc-hooks: 1.1.1
       typescript: 4.5.3
       typescript-language-server: 0.8.1
 
@@ -2517,6 +2519,14 @@ packages:
     resolution: {integrity: sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=}
     optional: true
 
+  /json5/2.2.0:
+    resolution: {integrity: sha512-f+8cldu7X/y7RAJurMEJmdoKXGB/X550w2Nr3tTbezL6RwEE/iMcm+tZnXeoZtKuOq6ft8+CqzEkrIgx1fPoQA==}
+    engines: {node: '>=6'}
+    hasBin: true
+    dependencies:
+      minimist: 1.2.5
+    dev: true
+
   /jsonfile/4.0.0:
     resolution: {integrity: sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=}
     optionalDependencies:
@@ -4217,6 +4227,14 @@ packages:
   /troika-worker-utils/0.42.0:
     resolution: {integrity: sha512-eTfX/vBNC7zMD+sSIDzbQAVwbhotbCz71IimZe0rFqPvAXkvLpKfH2YcWd1Ho42PII1O9Gl4QxxTV8ulRmDilQ==}
     dev: false
+
+  /tsc-hooks/1.1.1:
+    resolution: {integrity: sha512-IqEcFlxAxJwf1eeu+TT5VALC5k5RiImXOGd/fTAMCQI3p4bdG6uVdDoP2zeM9YwqAG5detMg6Ka7b2ewlUMVbQ==}
+    requiresBuild: true
+    dependencies:
+      json5: 2.2.0
+      typescript: 4.5.3
+    dev: true
 
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}

@@ -1,4 +1,4 @@
-# Nyx-Athena Editor | NAE
+# Nathene Editor | NE
 
 ## name origin
 

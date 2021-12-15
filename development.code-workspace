@@ -1,21 +1,16 @@
 {
 	"folders": [
 		{
-			"name": "plugin-runtime",
-			"path": "./plugin-runtime"
+			"name": "monorepo",
+			"path": "./"
 		},
 		{
-			"name": "backend",
-			"path": "./electron"
-		},
-		{
-			"name": "frontend",
-			"path": "./svelte"
+			"path": "../../.editor"
 		}
 	],
 	"settings": {
-		"deno.enable": true,
-		"deno.lint": true,
-		"deno.unstable": true
+		"deno.enable": false,
+		"deno.lint": false,
+		"deno.unstable": false
 	}
 }
