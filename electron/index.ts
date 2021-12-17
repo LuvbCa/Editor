@@ -1,16 +1,12 @@
-import {
-	app,
-	BrowserWindow,
-	ipcMain,
-	dialog,
-	globalShortcut,
-	nativeImage,
-	NativeImage,
-} from "electron";
+import { app, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { parseNatheneConfig } from "./globals";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
-import { registerIpcEvents, registerKeyCombs, sleep } from "./utils";
+import {
+	registerIpcEvents,
+	registerKeyCombinations,
+	registerWindowEvents,
+} from "./utils";
 
 app.on("ready", async (event, info) => {
 	createWindow();
@@ -41,7 +37,6 @@ const createWindow = async () => {
 		frame: false,
 		show: false,
 		icon,
-		transparent: true,
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: true,
@@ -49,47 +44,26 @@ const createWindow = async () => {
 		},
 	});
 
-	// const loadWin = displayLoadWindow(icon);
-	await parseNatheneConfig();
-
-	await pluginLoader();
-	// loadWin.close();
-
-	win.once("ready-to-show", () => {
-		//workaround: reset zoom
-		win.webContents.setZoomFactor(1);
-		win.show();
-	});
-
-	win.on("maximize", () => {
-		win.webContents.send("maximized", true);
-	});
-
-	win.on("unmaximize", () => {
-		win.webContents.send("maximized", false);
-	});
-
-	registerKeyCombs(win, globalShortcut);
-	registerIpcEvents(ipcMain, dialog, app);
-
+	win.webContents.openDevTools();
 	win.loadURL("http://localhost:3000/");
-};
 
-const displayLoadWindow = (icon: NativeImage): BrowserWindow => {
-	const loadWin = new BrowserWindow({
-		width: 300,
-		height: 300,
-		frame: false,
-		show: true,
-		icon,
-		resizable: false,
-		webPreferences: {
-			nodeIntegration: false,
-			contextIsolation: true,
-		},
+	//so window gets shown
+	registerWindowEvents(win);
+
+	win.webContents.on("did-start-loading", () => {});
+
+	win.webContents.once("did-finish-load", async () => {
+		await parseNatheneConfig();
+		const releasePlugins = await pluginLoader();
+
+		registerKeyCombinations(win);
+		registerIpcEvents();
+
+		win.webContents.send("finishedLoading");
+
+		win.webContents.on("did-finish-load", () => {
+			console.log("reloading");
+			win.webContents.send("finishedLoading");
+		});
 	});
-
-	loadWin.loadFile("../assets/index.html");
-
-	return loadWin;
 };

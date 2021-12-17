@@ -65,4 +65,7 @@ interface Window {
 		readFile: (readPath: string) => Promise<string>;
 		layerReadDir: (readPath: string, maxLayer: number, currentLayer: number) => Promise<LayerDir>;
 	};
+	loading: {
+		waitInitial: Promise<void>;
+	};
 }

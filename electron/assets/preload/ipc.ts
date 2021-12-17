@@ -9,7 +9,7 @@ const validSendChannels = [
 	"test",
 	"testPerformance",
 ];
-const validListenChannels = ["dirSelected", "maximized"];
+const validListenChannels = ["dirSelected", "maximized", "finishedLoading"];
 
 const validBalanceTypes = ["recursiveDir"];
 

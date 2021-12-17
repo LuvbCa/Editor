@@ -1,30 +1,25 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-import path from "path";
 import { generateIpcObject } from "./ipc";
 import { generateFsObject } from "./fs";
-
-interface LayerEntry {
-	name: string;
-	path: string;
-}
-
-interface LayerDir extends LayerEntry {
-	children: { [key: string]: LayerDir | LayerFile };
-	type: "directory";
-}
-
-interface LayerFile extends LayerEntry {
-	type: "file";
-}
 
 ipcRenderer.on("error", (event, errorcode: string) => {
 	alert(errorcode);
 });
 
+let loading = true;
+
 contextBridge.exposeInMainWorld("ipc", generateIpcObject());
 
 contextBridge.exposeInMainWorld("fs", generateFsObject());
+
+contextBridge.exposeInMainWorld("loading", {
+	waitInitial: new Promise<void>((resolve, reject) => {
+		if (!loading) return resolve();
+		ipcRenderer.once("finishedLoading", () => {
+			resolve();
+			loading = false;
+		});
+	}),
+});
 
 contextBridge.exposeInMainWorld("isElectron", true);

@@ -10,7 +10,7 @@ interface ExtendedWorker {
 
 export class WorkerPool extends EventEmitter {
 	workers: ExtendedWorker[];
-	debug = false;
+	debug = true;
 
 	constructor(threads: number, debug?: boolean) {
 		super();
@@ -19,16 +19,19 @@ export class WorkerPool extends EventEmitter {
 		this.workers = [];
 
 		for (let i = 0; i < threads; i++) {
-			const newWorker = new Worker("./worker.js", {
+			const newWorker = new Worker("./dist/assets/plugin/worker.js", {
 				stdout: true,
 				stderr: true,
+				resourceLimits: {
+					stackSizeMb: 8,
+				},
 			});
 
 			if (this.debug) {
 				newWorker.stdout.on("data", (data) => {
 					if (Buffer.isBuffer(data)) {
 						const utf8Data = data.toString("utf-8");
-						console.log(`[Worker-${i}]: ${utf8Data}`);
+						process.stdout.write(`[Worker-${i}]: ${utf8Data}`);
 						return;
 					}
 					console.log(`[Worker-${i}]: ${data}`);
@@ -37,7 +40,7 @@ export class WorkerPool extends EventEmitter {
 				newWorker.stderr.on("data", (data) => {
 					if (Buffer.isBuffer(data)) {
 						const utf8Data = data.toString("utf-8");
-						console.log(`[Worker-${i}]: ${utf8Data}`);
+						process.stdout.write(`[Worker-${i}]: ${utf8Data}`);
 						return;
 					}
 					console.log(`[Worker-${i}]: ${data}`);
@@ -60,9 +63,10 @@ export class WorkerPool extends EventEmitter {
 		return worker;
 	}
 
-	public releaseAll() {
+	public async releaseAll() {
+		console.log("releasing all Workers");
 		for (const worker of this.workers) {
-			worker.worker.terminate();
+			await worker.worker.terminate();
 		}
 	}
 
@@ -74,7 +78,7 @@ export class WorkerPool extends EventEmitter {
 
 	public startThread(threadId: number, input: PluginManifest[]) {
 		const worker = this.getWorkerById(threadId);
-		if (!worker) throw new Error(`Worker-${threadId} does not exsist.`);
+		if (!worker) throw new TypeError(`Worker-${threadId} does not exsist.`);
 
 		worker.worker.postMessage({ type: "start", input });
 	}

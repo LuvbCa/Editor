@@ -1,14 +1,15 @@
 import path from "path";
 import { mkdir, opendir, readFile } from "fs/promises";
 import { homedir } from "os";
-import { v4 as uuidv4 } from "uuid";
 import { NatheneGlobal } from "../../globals";
 
 import { PluginManifest, PluginIdentifier, PluginCode } from "./types";
+import { WorkerPool } from "./workerPool";
 
 // TODO: run this async after preloading for plugins finshed => dispatch to worker thread?
 export const pluginLoader = async () => {
-	const allPlugins: PluginManifest[] = [];
+	const allPlugins: PluginManifest[][] = [];
+	const workerPool = new WorkerPool(NatheneGlobal.pluginThreads || 4);
 
 	console.log("start parsing plugins");
 
@@ -17,6 +18,7 @@ export const pluginLoader = async () => {
 	try {
 		const dir = await opendir(pluginPath);
 
+		let i = 0;
 		for await (const pluginEntry of dir) {
 			if (pluginEntry.isDirectory()) {
 				const pluginMainifestPath = path.join(
@@ -27,15 +29,21 @@ export const pluginLoader = async () => {
 				const pluginManifestRaw = await readFile(pluginMainifestPath, "utf-8");
 				const pluginManifest = JSON.parse(pluginManifestRaw);
 
-				console.log(pluginManifest);
+				// console.log(pluginManifest);
 
 				if (!checkManifest(pluginManifest)) {
-					return console.log(
-						`Plugin '${pluginManifest.name}' doesn't meet the manifest definition `
+					throw new Error(
+						`Plugin '${pluginManifest.name}' doesn't meet the manifest definition`
 					);
 				}
 
-				loadPlugin(pluginManifest);
+				const thread = i % (NatheneGlobal.pluginThreads || 4);
+
+				if (!allPlugins[thread]) allPlugins[thread] = [];
+
+				allPlugins[thread].push(pluginManifest);
+
+				i++;
 			}
 		}
 	} catch (e) {
@@ -47,6 +55,14 @@ export const pluginLoader = async () => {
 			}
 		}
 	}
+
+	for (let q = 0; q < allPlugins.length; q++) {
+		workerPool.startThread(q, allPlugins[q]);
+	}
+
+	return async () => {
+		await workerPool.releaseAll();
+	};
 };
 
 const checkManifest = (input: any): input is PluginManifest => {
@@ -55,37 +71,4 @@ const checkManifest = (input: any): input is PluginManifest => {
 	if (typeof input.version !== "string") return false;
 
 	return true;
-};
-
-const checkPlugin = (input: any): input is PluginCode => {
-	if (typeof input !== "object") return false;
-	if (!(input["onPluginRegistered"] instanceof Function)) return false;
-	return true;
-};
-
-const loadPlugin = async (plugin: PluginManifest) => {
-	//TODOOO: expose global references to editor windows
-	//TODOOOO: expose needed apis to PluginHandler -> events like: editorLoad, editorChanged, editorInput ==> subscribing to handler instead of directly to the event from svelte/dom
-	//TODO: make every plugin load in to multithreaded context
-
-	console.log(NatheneGlobal);
-
-	const absEntryPointPath = path.join(
-		homedir(),
-		".editor",
-		"plugins",
-		plugin.name,
-		plugin.entryPoint
-	);
-
-	const code = require(absEntryPointPath);
-
-	if (!checkPlugin(code)) return;
-
-	const pluginIdentifer: PluginIdentifier = {
-		uuid: uuidv4(),
-		name: `${plugin.name}-${plugin.version}`,
-	};
-
-	code.onPluginRegistered(pluginIdentifer);
 };

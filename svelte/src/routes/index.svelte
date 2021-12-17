@@ -42,13 +42,10 @@
 </svelte:head>
 
 <div class="relative max-h-full max-w-full" id="site-container">
-	<div id="titlebar-container">
-		<Titlebar />
-	</div>
 	<section id="">
 		<FileSideBar />
 	</section>
-	<section>
+	<section class="rounded-3xl">
 		<div id="main-editor-tabs-container">
 			<div>
 				<Tabcontainer />
@@ -64,14 +61,10 @@
 	#site-container {
 		display: grid;
 		grid-template-columns: min(40%, 320px) calc(100% - min(40%, 320px));
-		grid-template-rows: 2em calc(100vh - 2em);
-	}
-	#titlebar-container {
-		grid-column-start: 1;
-		grid-column-end: 2;
+		grid-template-rows: calc(100vh - 2em);
 	}
 	section {
-		grid-row: 2;
+		grid-row: 1;
 		height: auto;
 		max-height: 100%;
 	}

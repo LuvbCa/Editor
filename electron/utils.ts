@@ -1,13 +1,7 @@
-import {
-	IpcMain,
-	BrowserWindow,
-	GlobalShortcut,
-	Dialog,
-	App,
-} from "electron/main";
+import { app, ipcMain, dialog, BrowserWindow, globalShortcut } from "electron";
 
-export const registerIpcEvents = (ipc: IpcMain, dialog: Dialog, app: App) => {
-	ipc.on("dirDialog", async (event) => {
+export const registerIpcEvents = () => {
+	ipcMain.on("dirDialog", async (event) => {
 		const result = await dialog.showOpenDialog(
 			BrowserWindow.fromWebContents(event.sender)!,
 			{
@@ -18,16 +12,16 @@ export const registerIpcEvents = (ipc: IpcMain, dialog: Dialog, app: App) => {
 		event.reply("dirSelected", result.filePaths[0]);
 	});
 
-	ipc.on("close", (event) => {
+	ipcMain.on("close", (event) => {
 		BrowserWindow.fromWebContents(event.sender)?.close();
 		app.quit();
 	});
 
-	ipc.on("minimize", (event) => {
+	ipcMain.on("minimize", (event) => {
 		BrowserWindow.fromWebContents(event.sender)?.minimize();
 	});
 
-	ipc.on("maximize", (event) => {
+	ipcMain.on("maximize", (event) => {
 		const win = BrowserWindow.fromWebContents(event.sender);
 		const isMaximized = win?.isMaximized();
 
@@ -41,21 +35,34 @@ export const registerIpcEvents = (ipc: IpcMain, dialog: Dialog, app: App) => {
 	});
 };
 
-export const registerKeyCombs = (
-	win: BrowserWindow,
-	shortcut: GlobalShortcut
-) => {
-	const openDevTools = shortcut.register("CommandOrControl+X", () => {
+export const registerWindowEvents = (win: BrowserWindow) => {
+	win.once("ready-to-show", () => {
+		//workaround: reset zoom
+		win.webContents.setZoomFactor(1);
+		win.show();
+	});
+
+	win.on("maximize", () => {
+		win.webContents.send("maximized", true);
+	});
+
+	win.on("unmaximize", () => {
+		win.webContents.send("maximized", false);
+	});
+};
+
+export const registerKeyCombinations = (win: BrowserWindow) => {
+	const openDevTools = globalShortcut.register("CommandOrControl+X", () => {
 		win.webContents.isDevToolsOpened()
 			? win.webContents.closeDevTools()
 			: win.webContents.openDevTools();
 	});
 
-	const stayOnTop = shortcut.register("CommandOrControl+U", () => {
+	const stayOnTop = globalShortcut.register("CommandOrControl+U", () => {
 		win.isAlwaysOnTop() ? win.setAlwaysOnTop(false) : win.setAlwaysOnTop(true);
 	});
 
-	const close = shortcut.register("CommandOrControl+C+Enter", () => {
+	const close = globalShortcut.register("CommandOrControl+C+Enter", () => {
 		win.close();
 	});
 
@@ -67,4 +74,3 @@ export const registerKeyCombs = (
 export const sleep = (milliseconds: number) => {
 	return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
-

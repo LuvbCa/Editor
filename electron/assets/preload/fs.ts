@@ -42,7 +42,7 @@ const layerReadDir = async (
 
 	const fullPath = path.resolve(readPath);
 	const root: LayerDir = {
-		name: fullPath.substr(fullPath.lastIndexOf("\\") + 1),
+		name: fullPath.slice(fullPath.lastIndexOf("\\") + 1),
 		path: fullPath,
 		children: {},
 		type: "directory",

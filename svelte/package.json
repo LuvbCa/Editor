@@ -51,6 +51,7 @@
 		"hyperscript": "^2.0.2",
 		"lowlight": "^2.3.0",
 		"refractor": "^4.2.1",
+		"svelte-loading-spinners": "^0.1.7",
 		"svelte-slimscroll": "^1.0.6",
 		"three": "^0.132.2",
 		"tree-sitter-typescript": "^0.19.0",
