@@ -21,11 +21,8 @@ class FunctionQueue {
 
 	constructor() {}
 
-	public push(func: Function, ...args: any[]) {
-		this.internalQueue.push({
-			func,
-			args,
-		});
+	public push(value: InternalFunctionQueue) {
+		this.internalQueue.push(value);
 	}
 
 	public execute() {
@@ -37,12 +34,7 @@ class FunctionQueue {
 		const { func, args } = latest;
 
 		this.executing = true;
-		func.apply(
-			{
-				shu: "sads",
-			},
-			args
-		);
+		func.apply({}, args);
 		this.executing = false;
 		this.execute();
 	}
@@ -61,8 +53,8 @@ const startExecuting = async (arrayOfPlugins: any[]) => {
 	const queue = new FunctionQueue();
 
 	for (const plugin of arrayOfPlugins) {
-		const { func, args } = await loadPlugin(plugin);
-		queue.push(func, args);
+		const newPlugin = await loadPlugin(plugin);
+		queue.push(newPlugin);
 	}
 
 	console.log("pushed all starting funcs");

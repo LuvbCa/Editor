@@ -30,17 +30,6 @@
 	// );
 </script>
 
-<svelte:head>
-	<title>Home</title>
-
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
-	<link
-		href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Poppins:wght@100;300;500;600;700;800;900&display=swap"
-		rel="stylesheet"
-	/>
-</svelte:head>
-
 <div class="relative max-h-full max-w-full" id="site-container">
 	<section id="">
 		<FileSideBar />

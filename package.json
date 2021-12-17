@@ -1,5 +1,5 @@
 {
-	"name": "ny-athena-monorepo",
+	"name": "nathene-monorepo",
 	"version": "0.0.1-alpha",
 	"workspaces": [
 		"electron/*",

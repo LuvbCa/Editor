@@ -27,6 +27,8 @@ export class WorkerPool extends EventEmitter {
 				},
 			});
 
+			//TODO: Isolate Workers from global System?
+
 			if (this.debug) {
 				newWorker.stdout.on("data", (data) => {
 					if (Buffer.isBuffer(data)) {
