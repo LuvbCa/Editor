@@ -27,7 +27,7 @@
 
   - run `pnpm install` in top level directory
 
-- Step 2️ - **Electron**-backend:
+- Step 2 - **Electron**-backend:
 
   - run `npm start` in `./electron`
   - _optionally: run `tsc --watch -p ./tsconfig.json` in `./electron` for automatic compilation of typescript_
