@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "monorepo",
+			"path": "./"
+		},
+		{
+			"path": "../../.editor"
+		}
+	],
+	"settings": {
+		"deno.enable": false,
+		"deno.lint": false,
+		"deno.unstable": false
+	}
+}

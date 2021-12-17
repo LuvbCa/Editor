@@ -1,0 +1,39 @@
+{
+	"name": "nyx-athena-electron",
+	"version": "0.0.1",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
+		"start": "electron ./dist/index.js",
+		"lsp": "typescript-language-server --stdio"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/electron": "^1.6.10",
+		"electron": "^16.0.4",
+		"electron-rebuild": "^3.2.5",
+		"typescript": "^4.5.3",
+		"typescript-language-server": "^0.8.1"
+	},
+	"dependencies": {
+		"@types/adm-zip": "^0.4.34",
+		"@types/node-abi": "^3.0.0",
+		"@types/node-fetch": "^2.5.12",
+		"@types/uuid": "^8.3.1",
+		"@types/workerpool": "^6.1.0",
+		"adm-zip": "^0.5.9",
+		"deno-vm": "^0.8.1",
+		"isolated-vm": "^4.3.6",
+		"microjob": "^0.7.0",
+		"nan": "^2.14.0",
+		"node-abi": "^3.5.0",
+		"node-fetch": "^2.6.6",
+		"node-gyp": "^8.4.1",
+		"piscina": "^3.1.0",
+		"uuid": "^8.3.2",
+		"vm2": "^3.9.5",
+		"workerpool": "^6.1.5"
+	}
+}

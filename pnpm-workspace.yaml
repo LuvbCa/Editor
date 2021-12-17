@@ -1,5 +1,6 @@
 packages:
   # all packages in subdirs of packages/ and components/
-  - "src-svelte/**"
-  - "src-electron/**"
+  - "svelte/**"
+  - "electron/**"
+  - "plugin-runtime/**"
   # exclude packages that are inside test directories
