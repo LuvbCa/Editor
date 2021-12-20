@@ -5,7 +5,8 @@
 	"main": "./dist/index.js",
 	"scripts": {
 		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
-		"start": "electron-forge start",
+		"start": "electron .",
+		"forgeStart": "electron-forge start",
 		"lsp": "typescript-language-server --stdio",
 		"package": "electron-forge package",
 		"make": "electron-forge make"
