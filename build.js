@@ -1,6 +1,6 @@
 const { spawn } = require("child_process");
 const path = require("path");
-const { mkdir } = require("fs").promises;
+const { mkdir, rm } = require("fs").promises;
 
 const buildElectron = () => {
 	return new Promise((resolve, reject) => {
@@ -13,8 +13,15 @@ const buildElectron = () => {
 			}
 		);
 
-		elctronBuilder.stdout.pipe(process.stdout);
-		elctronBuilder.stderr.pipe(process.stderr);
+		elctronBuilder.stdout.on("data", (chunk) => {
+			process.stdout.write("[Electron-Forge | Log]: ");
+			process.stdout.write(chunk);
+		});
+
+		elctronBuilder.stderr.on("data", (chunk) => {
+			process.stdout.write("[Electron-Forge | ERR]: ");
+			process.stdout.write(chunk);
+		});
 
 		elctronBuilder.on("close", () => {
 			console.log("finished building electron!");
@@ -39,8 +46,15 @@ const buildSvelte = () => {
 			}
 		);
 
-		svelteBuilder.stdout.pipe(process.stdout);
-		svelteBuilder.stderr.pipe(process.stderr);
+		svelteBuilder.stdout.on("data", (chunk) => {
+			process.stdout.write("[Svelte-Kit | Log]: ");
+			process.stdout.write(chunk);
+		});
+
+		svelteBuilder.stderr.on("data", (chunk) => {
+			process.stdout.write("[Svelte-Kit | ERR]: ");
+			process.stdout.write(chunk);
+		});
 
 		svelteBuilder.on("close", () => {
 			console.log("finished building svelte!");
@@ -62,10 +76,17 @@ const build = async () => {
 const main = async () => {
 	try {
 		await mkdir("./build");
-		await build();
 	} catch (e) {
-		if (e.code === "EEXIST") await build();
+		if (e.code === "EEXIST") {
+			console.log("deleting build dir");
+			await rm("./build", {
+				recursive: true,
+				force: true,
+			});
+			return main();
+		}
 	}
+	await build();
 };
 
 main();
