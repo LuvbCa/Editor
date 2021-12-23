@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Tab from './Tab.svelte';
+	import Tab from './components/Tab.svelte';
 
 	let openTabs = [];
 

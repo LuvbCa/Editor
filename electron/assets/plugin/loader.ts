@@ -6,6 +6,8 @@ import { NatheneGlobal } from "../../globals";
 import { PluginManifest, PluginIdentifier, PluginCode } from "./types";
 import { WorkerPool } from "./workerPool";
 
+
+
 // TODO: run this async after preloading for plugins finshed => dispatch to worker thread?
 export const pluginLoader = async () => {
 	const allPlugins: PluginManifest[][] = [];

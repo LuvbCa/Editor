@@ -2,6 +2,8 @@ import { EventEmitter } from "events";
 import { Worker } from "worker_threads";
 import { PluginManifest, PluginIdentifier, PluginCode } from "./types";
 import path from "path";
+import { ipcMain } from "electron";
+
 interface ExtendedWorker {
 	worker: Worker;
 	executing: boolean;
@@ -58,6 +60,18 @@ export class WorkerPool extends EventEmitter {
 				id: i,
 			});
 		}
+
+		ipcMain.on("editorRegistered", (_, state) => {
+			this.broadcastToAll("onEditorRegistered", state);
+		});
+
+		ipcMain.on("editorReleased", (_, uuid) => {
+			this.broadcastToAll("onEditorReleased", uuid);
+		});
+
+		ipcMain.on("editorStateUpdate", (_, state) => {
+			this.broadcastToAll("onEditorStateUpdate", state);
+		});
 	}
 
 	public getWorkerById(id: number): ExtendedWorker | undefined {

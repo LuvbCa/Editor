@@ -1,0 +1,213 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 4,
+    "total": 4,
+    "workspacePrefix": "C:\\Users\\lmima\\Desktop\\ownEditor"
+  },
+  "1 debug pnpm:package-manifest": {
+    "initial": {
+      "name": "nathene-monorepo",
+      "version": "0.0.1-alpha",
+      "workspaces": [
+        "electron/*",
+        "svelte/*",
+        "plugin-runtime/*"
+      ]
+    },
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor"
+  },
+  "2 debug pnpm:package-manifest": {
+    "initial": {
+      "name": "nyx-athena-electron",
+      "version": "0.0.1",
+      "description": "a editor for source files",
+      "main": "./dist/index.js",
+      "scripts": {
+        "elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
+        "start": "electron .",
+        "forgeStart": "electron-forge start",
+        "lsp": "typescript-language-server --stdio",
+        "package": "electron-forge package",
+        "make": "electron-forge make"
+      },
+      "author": "Luca Michael Mathaea",
+      "license": "MIT",
+      "devDependencies": {
+        "@electron-forge/cli": "^6.0.0-beta.61",
+        "@electron-forge/maker-deb": "^6.0.0-beta.61",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.61",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+        "@electron-forge/maker-zip": "^6.0.0-beta.61",
+        "@types/electron": "^1.6.10",
+        "electron": "^16.0.4",
+        "electron-rebuild": "^3.2.5",
+        "typescript": "^4.5.3",
+        "typescript-language-server": "^0.8.1"
+      },
+      "dependencies": {
+        "@types/adm-zip": "^0.4.34",
+        "@types/node-abi": "^3.0.0",
+        "@types/node-fetch": "^2.5.12",
+        "@types/uuid": "^8.3.1",
+        "@types/workerpool": "^6.1.0",
+        "adm-zip": "^0.5.9",
+        "deno-vm": "^0.8.1",
+        "electron-squirrel-startup": "^1.0.0",
+        "microjob": "^0.7.0",
+        "nan": "^2.14.0",
+        "node-abi": "^3.5.0",
+        "node-fetch": "^2.6.6",
+        "node-gyp": "^8.4.1",
+        "piscina": "^3.1.0",
+        "uuid": "^8.3.2",
+        "vm2": "^3.9.5",
+        "workerpool": "^6.1.5"
+      },
+      "config": {
+        "forge": "./forge.config.js"
+      }
+    },
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor\\electron"
+  },
+  "3 debug pnpm:package-manifest": {
+    "initial": {
+      "name": "nyx-athena-electron",
+      "version": "0.0.1",
+      "description": "a editor for source files",
+      "main": "./dist/index.js",
+      "scripts": {
+        "elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
+        "start": "electron .",
+        "forgeStart": "electron-forge start",
+        "lsp": "typescript-language-server --stdio",
+        "package": "electron-forge package",
+        "make": "electron-forge make"
+      },
+      "author": "Luca Michael Mathaea",
+      "license": "MIT",
+      "devDependencies": {
+        "@electron-forge/cli": "^6.0.0-beta.61",
+        "@electron-forge/maker-deb": "^6.0.0-beta.61",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.61",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+        "@electron-forge/maker-zip": "^6.0.0-beta.61",
+        "@types/electron": "^1.6.10",
+        "electron": "^16.0.4",
+        "electron-rebuild": "^3.2.5",
+        "typescript": "^4.5.3",
+        "typescript-language-server": "^0.8.1"
+      },
+      "dependencies": {
+        "@types/adm-zip": "^0.4.34",
+        "@types/node-abi": "^3.0.0",
+        "@types/node-fetch": "^2.5.12",
+        "@types/uuid": "^8.3.1",
+        "@types/workerpool": "^6.1.0",
+        "adm-zip": "^0.5.9",
+        "deno-vm": "^0.8.1",
+        "electron-squirrel-startup": "^1.0.0",
+        "microjob": "^0.7.0",
+        "nan": "^2.14.0",
+        "node-abi": "^3.5.0",
+        "node-fetch": "^2.6.6",
+        "node-gyp": "^8.4.1",
+        "piscina": "^3.1.0",
+        "uuid": "^8.3.2",
+        "vm2": "^3.9.5",
+        "workerpool": "^6.1.5"
+      },
+      "config": {}
+    },
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app"
+  },
+  "4 debug pnpm:package-manifest": {
+    "initial": {
+      "name": "nathene-svelte",
+      "version": "0.0.1",
+      "scripts": {
+        "dev": "svelte-kit dev",
+        "build": "svelte-kit build",
+        "preview": "svelte-kit preview",
+        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+        "lint": "prettier --ignore-path .gitignore  --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
+        "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
+      },
+      "devDependencies": {
+        "@sveltejs/adapter-static": "^1.0.0-next.19",
+        "@sveltejs/kit": "next",
+        "@types/cookie": "^0.4.0",
+        "@typescript-eslint/eslint-plugin": "^4.19.0",
+        "@typescript-eslint/parser": "^4.19.0",
+        "autoprefixer": "^10.3.4",
+        "cssnano": "^5.0.8",
+        "eslint": "^7.22.0",
+        "eslint-config-prettier": "^8.1.0",
+        "eslint-plugin-svelte3": "^3.2.0",
+        "postcss": "^8.3.6",
+        "postcss-load-config": "^3.1.0",
+        "prettier": "~2.2.1",
+        "prettier-plugin-svelte": "^2.2.0",
+        "svelte": "^3.34.0",
+        "svelte-check": "^2.0.0",
+        "svelte-feather-icons": "^3.5.0",
+        "svelte-highlight": "^5.0.0",
+        "svelte-preprocess": "^4.9.4",
+        "tailwindcss": "^2.2.15",
+        "tree-sitter-cli": "^0.20.0",
+        "tree-sitter-javascript": "^0.19.0",
+        "tslib": "^2.0.0",
+        "typescript": "^4.0.0"
+      },
+      "type": "module",
+      "dependencies": {
+        "@fontsource/fira-mono": "^4.2.2",
+        "@lukeed/uuid": "^2.0.0",
+        "@tauri-apps/api": "^1.0.0-beta.8",
+        "@types/three": "^0.131.0",
+        "cookie": "^0.4.1",
+        "electron": "^15.1.0",
+        "happy-svelte-scrollbar": "^1.1.0",
+        "hast-to-hyperscript": "^10.0.1",
+        "hex-rgb": "^5.0.0",
+        "highlight.js": "^11.2.0",
+        "hyperscript": "^2.0.2",
+        "lowlight": "^2.3.0",
+        "refractor": "^4.2.1",
+        "svelte-loading-spinners": "^0.1.7",
+        "svelte-slimscroll": "^1.0.6",
+        "three": "^0.132.2",
+        "tree-sitter-typescript": "^0.19.0",
+        "troika-three-text": "^0.42.0",
+        "web-tree-sitter": "^0.19.4"
+      }
+    },
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor\\svelte"
+  },
+  "5 debug pnpm:context": {
+    "currentLockfileExists": false,
+    "storeDir": "C:\\Users\\lmima\\.pnpm-store\\v3",
+    "virtualStoreDir": "C:\\Users\\lmima\\Desktop\\ownEditor\\node_modules\\.pnpm"
+  },
+  "6 debug pnpm:stage": {
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor",
+    "stage": "resolution_started"
+  },
+  "7 warn pnpm": {
+    "message": "Moving @types/adm-zip that was installed by a different package manager to \"node_modules/.ignored",
+    "prefix": "C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app"
+  },
+  "8 error pnpm": {
+    "errno": -4048,
+    "code": "EPERM",
+    "syscall": "rename",
+    "path": "C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\@types\\adm-zip",
+    "dest": "C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\.ignored\\@types\\adm-zip",
+    "err": {
+      "name": "pnpm",
+      "message": "EPERM: operation not permitted, rename 'C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\@types\\adm-zip' -> 'C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\.ignored\\@types\\adm-zip'",
+      "code": "EPERM",
+      "stack": "pnpm: EPERM: operation not permitted, rename 'C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\@types\\adm-zip' -> 'C:\\Users\\lmima\\Desktop\\ownEditor\\electron\\out\\nyx-athena-electron-win32-x64\\resources\\app\\node_modules\\.ignored\\@types\\adm-zip'"
+    }
+  }
+}
