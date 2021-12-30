@@ -3,14 +3,12 @@
 		{
 			"name": "monorepo",
 			"path": "./"
-		},
-		{
-			"path": "../../.editor"
 		}
 	],
 	"settings": {
 		"deno.enable": false,
 		"deno.lint": false,
-		"deno.unstable": false
+		"deno.unstable": false,
+		"rust-analyzer.linkedProjects": ["./tauri/src-tauri/Cargo.toml"]
 	}
 }

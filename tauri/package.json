@@ -1,0 +1,17 @@
+{
+	"name": "nathene-tauri",
+	"version": "0.0.1-beta",
+	"description": "tauri backend (testing)",
+	"main": ".",
+	"scripts": {
+		"tauri": "tauri"
+	},
+	"author": "Luca Michael Mathaea",
+	"license": "MIT",
+	"devDependencies": {
+		"@tauri-apps/cli": "^1.0.0-beta.10"
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^1.0.0-beta.8"
+	}
+}

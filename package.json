@@ -4,6 +4,10 @@
 	"workspaces": [
 		"electron/*",
 		"svelte/*",
-		"plugin-runtime/*"
-	]
+		"plugin-runtime/*",
+		"tauri/*"
+	],
+	"devDependencies": {
+		"prettier": "~2.2.1"
+	}
 }

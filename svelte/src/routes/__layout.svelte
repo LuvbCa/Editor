@@ -14,7 +14,7 @@
 </script>
 
 <main class="relative select-text bg-gray-900">
-	{#if window['isElectron']}
+	{#if !window['isElectron']}
 		<Titlebar />
 		{#if loading}
 			<div out:fade>

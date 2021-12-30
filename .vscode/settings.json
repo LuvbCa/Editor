@@ -2,5 +2,9 @@
 	"[svelte]": {
 		"editor.defaultFormatter": "svelte.svelte-vscode"
 	},
-	"rust-analyzer.procMacro.enable": false
+	"[rust]": {
+		"editor.defaultFormatter": "rust-lang.rust"
+	},
+	"rust-analyzer.linkedProjects": ["./tauri/src-tauri/Cargo.toml"],
+	"rust-analyzer.checkOnSave.enable": false
 }
