@@ -8,6 +8,7 @@ import {
 	registerWindowEvents,
 } from "./utils";
 
+
 app.on("ready", async (event, info) => {
 	createWindow();
 
