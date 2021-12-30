@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { generateIpcObject } from "./ipc";
 import { generateFsObject } from "./fs";
+import { generateStateObject } from "./state";
 
 ipcRenderer.on("error", (event, errorcode: string) => {
 	alert(errorcode);
@@ -21,5 +22,7 @@ contextBridge.exposeInMainWorld("loading", {
 		});
 	}),
 });
+
+contextBridge.exposeInMainWorld("state", generateStateObject());
 
 contextBridge.exposeInMainWorld("isElectron", true);

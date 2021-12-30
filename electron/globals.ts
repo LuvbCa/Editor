@@ -2,9 +2,40 @@ import { readFile, writeFile } from "fs/promises";
 import { homedir } from "os";
 import path from "path";
 
-interface NatheneGlobal {
+type Key = string | number;
+
+interface JsonObject {
+	[key: Key]: JsonTypes | JsonObject;
+}
+type JsonTypes = string | number | JsonTypes[] | JsonObject | boolean | null;
+
+class NatheneGlobal {
+	dynamic: { [key: Key]: any };
+
+	readonly plugin: NatheneGlobalPlugin;
+	readonly config: NatheneGlobalConfig;
+
+	constructor() {
+		const configFile = await readFile(configPath, "utf-8");
+
+		const config = JSON.parse(configFile);
+	}
+
+	modifyConfig(key: Key, value: JsonTypes, save = false) {
+		this.config = value;
+	}
+}
+
+interface NatheneGlobalConfig {
 	[key: string | symbol | number]: any;
 	pluginThreads: number;
+}
+
+interface NatheneGlobalPlugin {
+	/**
+	 * returns uuid
+	 */
+	register: (name: string) => string;
 }
 
 const configPath = path.join(homedir(), ".editor", "config.json");
@@ -13,7 +44,10 @@ const configPath = path.join(homedir(), ".editor", "config.json");
  * `parseAtheneConfig` needs to be run before this can be accessed
  * `parseAtheneConfig` can also be run to make this up-to-date
  */
-export let NatheneGlobal: NatheneGlobal;
+
+declare global {
+	var nathene: NatheneGlobal;
+}
 
 /**
  * needs to be run before NatheneGlobal is set!
@@ -24,14 +58,14 @@ export const parseNatheneConfig = async () => {
 	const config = JSON.parse(configFile);
 
 	if (checkConfig(config)) {
-		NatheneGlobal = config;
+		nathene.modifyConfig = config;
 		return;
 	}
 
 	console.error("check config file for it's rightness");
 };
 
-const checkConfig = (input: any): input is NatheneGlobal => {
+const checkConfig = (input: any): input is NatheneGlobalConfig => {
 	if (typeof input.pluginThreads !== "number") return false;
 	return true;
 };
@@ -67,10 +101,9 @@ export const addToNatheneConfig = async (
  *   - this can change however
  *
  */
-export const addToNatheneGlobal = (
+export const modifyNatheneGlobalDynamic = (
 	key: string | number | symbol,
 	value: any
 ) => {
-	if (NatheneGlobal[key]) throw new TypeError("choose a different key");
-	NatheneGlobal[key] = value;
+	nathene.dynamic[key] = value;
 };

@@ -1,16 +1,24 @@
 {
-	"name": "nyx-athena-electron",
+	"name": "nathene-electron",
 	"version": "0.0.1",
-	"description": "",
-	"main": "index.js",
+	"description": "a editor for source files",
+	"main": "./dist/index.js",
 	"scripts": {
 		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
-		"start": "electron ./dist/index.js",
-		"lsp": "typescript-language-server --stdio"
+		"start": "electron .",
+		"forgeStart": "electron-forge start",
+		"lsp": "typescript-language-server --stdio",
+		"package": "electron-forge package",
+		"make": "electron-forge make"
 	},
-	"author": "",
-	"license": "ISC",
+	"author": "Luca Michael Mathaea",
+	"license": "MIT",
 	"devDependencies": {
+		"@electron-forge/cli": "^6.0.0-beta.61",
+		"@electron-forge/maker-deb": "^6.0.0-beta.61",
+		"@electron-forge/maker-rpm": "^6.0.0-beta.61",
+		"@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+		"@electron-forge/maker-zip": "^6.0.0-beta.61",
 		"@types/electron": "^1.6.10",
 		"electron": "^16.0.4",
 		"electron-rebuild": "^3.2.5",
@@ -25,7 +33,8 @@
 		"@types/workerpool": "^6.1.0",
 		"adm-zip": "^0.5.9",
 		"deno-vm": "^0.8.1",
-		"isolated-vm": "^4.3.6",
+		"electron-squirrel-startup": "^1.0.0",
+		"fast-json": "^2.1.0",
 		"microjob": "^0.7.0",
 		"nan": "^2.14.0",
 		"node-abi": "^3.5.0",
@@ -35,5 +44,8 @@
 		"uuid": "^8.3.2",
 		"vm2": "^3.9.5",
 		"workerpool": "^6.1.5"
+	},
+	"config": {
+		"forge": "./forge.config.js"
 	}
 }

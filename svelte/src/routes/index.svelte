@@ -10,7 +10,7 @@
 		currentWorkingDirTree,
 		currentWorkingDirTreeDeepestLayer
 	} from '$lib/store';
-	import Tabcontainer from '$lib/components/Tabcontainer.svelte';
+	import Tabcontainer from '$lib/Tabcontainer.svelte';
 	import { onMount } from 'svelte';
 
 	const logStores = (...inputs: any[]) => {
