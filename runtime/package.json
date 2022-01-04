@@ -9,7 +9,9 @@
   "author": "Luca Michael Mathaea",
   "license": "MIT",
   "dependencies": {
+    "@types/node-ipc": "^9.2.0",
     "@types/ws": "^8.2.2",
+    "node-ipc": "^10.1.0",
     "ws": "^8.4.0"
   },
   "optionalDependencies": {

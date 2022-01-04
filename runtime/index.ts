@@ -1,8 +1,8 @@
-import WebSocket, { WebSocketServer } from "ws";
+import ipc from "node-ipc";
 import { readFile, stat } from "fs/promises";
 import path from "path";
 
-import { fork, spawn, ChildProcessWithoutNullStreams } from "child_process";
+import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 
 interface Config {
 	serverDirectory: string;
@@ -21,22 +21,18 @@ interface Server {
 interface Platforms {
 	[key: string]: Command | undefined;
 }
-
 interface GlobalCommand {
 	isGlobal: true;
 	command: string;
 	spawnArgs: string[];
 }
-
 interface LocalCommand {
 	isGlobal: false;
 	command: ExecutionLocation;
 	spawnArgs: string[];
 }
-
 type Command = GlobalCommand | LocalCommand;
 type validPlatforms = "win32" | "darwin" | "linux";
-
 type ExecutionLocation = {
 	[key in validPlatforms]: {
 		/**
@@ -47,17 +43,18 @@ type ExecutionLocation = {
 };
 
 const main = async () => {
+	overrideConsole();
 	const config = await parseConfigFile();
-	const wss = await createWebSocketServer(config.runtimePort);
 	const abort = new AbortController();
 
-	wss.on("connection", (socket, request) => {
-		console.log(socket);
-		console.log(request);
+	await createServer();
 
-		socket.on("message", (data, isBinary) => {
-			console.log(data);
-		});
+	ipc.server.on("register", (payload) => {
+		console.log("new client trying to register:", payload);
+	});
+
+	ipc.server.on("error", (err) => {
+		console.log("[CORE-SOCKET-ERR]:", err);
 	});
 
 	for (const server of config.servers) {
@@ -67,16 +64,9 @@ const main = async () => {
 		try {
 			await stat(indexFile);
 
-			// const newSubServer = fork(indexFile, {
-			// 	stdio: ["pipe", "pipe", "pipe", "ipc"],
-			// 	signal: abort.signal,
-			// });
-
 			const command = config.platforms[server.platform];
 
 			if (!command) throw new Error("platform not defined in config file");
-
-			console.log(workingDir);
 
 			const newSubServer = await extendedSpawn(
 				command,
@@ -85,14 +75,31 @@ const main = async () => {
 				abort.signal
 			);
 
+			console.log(`started ${server.type}`);
+
+			const print = (data: string, suffix: string) => {
+				const printing = data.split(/\n\r?/g).filter((a) => a.length > 0);
+
+				for (const prints of printing) {
+					process.stdout.write(`[${server.type}-${suffix}]: `);
+					process.stdout.write(prints + "\n");
+				}
+			};
+
 			newSubServer.stdout.on("data", (data) => {
-				process.stdout.write(`[${server.type}-LOG]: `);
-				process.stdout.write(data);
+				if (Buffer.isBuffer(data)) {
+					const utf8Data = data.toString("utf-8");
+					return print(utf8Data, "LOG");
+				}
+				print(data, "LOG");
 			});
 
 			newSubServer.stderr.on("data", (data) => {
-				process.stdout.write(`[${server.type}-ERR]: `);
-				process.stdout.write(data);
+				if (Buffer.isBuffer(data)) {
+					const utf8Data = data.toString("utf-8");
+					return print(utf8Data, "ERR");
+				}
+				print(data, "ERR");
 			});
 		} catch (e) {
 			console.error(`Error accessing ${indexFile}:`);
@@ -148,11 +155,9 @@ const getvalidPlatform = (): validPlatforms => {
 	switch (process.platform) {
 		case "win32": {
 			return "win32";
-			break;
 		}
 		case "linux": {
 			return "linux";
-			break;
 		}
 		case "darwin": {
 			return "darwin";
@@ -187,36 +192,46 @@ const isConfigFile = (input: any): input is Config => {
 	return true;
 };
 
-const createWebSocketServer = (port: number): Promise<WebSocket.Server> => {
+const createServer = (): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		const wss = new WebSocketServer({
-			port,
-			perMessageDeflate: {
-				zlibDeflateOptions: {
-					// See zlib defaults.
-					chunkSize: 1024,
-					memLevel: 7,
-					level: 3,
-				},
-				zlibInflateOptions: {
-					chunkSize: 10 * 1024,
-				},
-				// Other options settable:
-				clientNoContextTakeover: true, // Defaults to negotiated value.
-				serverNoContextTakeover: true, // Defaults to negotiated value.
-				serverMaxWindowBits: 10, // Defaults to negotiated value.
-				// Below options specified as default values.
-				concurrencyLimit: 10, // Limits zlib concurrency for perf.
-				threshold: 1024, // Size (in bytes) below which messages
-				// should not be compressed if context takeover is disabled.
-			},
+		ipc.config.logger = () => {};
+
+		ipc.serve("/tmp/nathene.editor", () => {
+			resolve();
 		});
 
-		wss.once("listening", () => {
-			console.log("WebSocket Server listens on port 8080");
-			resolve(wss);
-		});
+		ipc.server.start();
 	});
+};
+
+const overrideConsole = () => {
+	const originalConsoleLog = console.log;
+
+	console.log = function () {
+		const args = [];
+
+		args.push("[Main-LOG]:");
+
+		for (var i = 0; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+
+		originalConsoleLog.apply(console, args);
+	};
+
+	const originalConsoleError = console.error;
+
+	console.error = function () {
+		const args = [];
+
+		args.push("[Main-ERR]:");
+
+		for (var i = 0; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+
+		originalConsoleLog.apply(console, args);
+	};
 };
 
 main();

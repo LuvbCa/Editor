@@ -1,8 +1,8 @@
 import { app, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { parseNatheneConfig } from "./globals";
-import { WebSocket } from "ws";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
+import ipc from "node-ipc";
 
 import {
 	registerIpcEvents,
@@ -10,25 +10,25 @@ import {
 	registerWindowEvents,
 } from "./utils";
 
-app.on("ready", async (event, info) => {
-	createWindow();
+// app.on("ready", async (event, info) => {
+// 	createWindow();
 
-	app.on("activate", () => {
-		if (BrowserWindow.getAllWindows().length === 0) {
-			createWindow();
-		}
-	});
-});
+// 	app.on("activate", () => {
+// 		if (BrowserWindow.getAllWindows().length === 0) {
+// 			createWindow();
+// 		}
+// 	});
+// });
 
-app.on("will-quit", () => {
-	globalShortcut.unregisterAll();
-});
+// app.on("will-quit", () => {
+// 	globalShortcut.unregisterAll();
+// });
 
-app.on("window-all-closed", () => {
-	if (process.platform !== "darwin") {
-		app.quit();
-	}
-});
+// app.on("window-all-closed", () => {
+// 	if (process.platform !== "darwin") {
+// 		app.quit();
+// 	}
+// });
 
 const createWindow = async () => {
 	const icon = nativeImage.createFromPath("./assets/loading_window/icon.png");
@@ -69,3 +69,11 @@ const createWindow = async () => {
 		});
 	});
 };
+
+const main = () => {
+	ipc.connectTo("master", "/tmp/nathene.editor");
+
+	ipc.of["master"].emit("register", { type: "windowServer" });
+};
+
+main();
