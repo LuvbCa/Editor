@@ -1,5 +1,6 @@
 {
-	"name": "nathene-svelte",
+	"name": "nathene-default-ui-server",
+	"description": "ui server build with svelte for nathene editor / runtime",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "svelte-kit dev",

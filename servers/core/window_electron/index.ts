@@ -1,13 +1,14 @@
 import { app, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { parseNatheneConfig } from "./globals";
+import { WebSocket } from "ws";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
+
 import {
 	registerIpcEvents,
 	registerKeyCombinations,
 	registerWindowEvents,
 } from "./utils";
-
 
 app.on("ready", async (event, info) => {
 	createWindow();

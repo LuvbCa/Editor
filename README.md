@@ -1,6 +1,6 @@
 # Nathene Editor | NE
 
-![Nathene Banner](./media/banner.png)
+![Nathene Banner](./docs/images/banner.png)
 
 ---
 

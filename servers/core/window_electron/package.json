@@ -1,7 +1,7 @@
 {
-	"name": "nathene-electron",
+	"name": "nathene-default-window-server",
 	"version": "0.0.1",
-	"description": "a editor for source files",
+	"description": "window server build with electron for nathene editor / runtime",
 	"main": "./dist/index.js",
 	"scripts": {
 		"elecmon": " nodemon --watch . --exec \"electron ./dist/index.js\"",
@@ -19,8 +19,7 @@
 		"@electron-forge/maker-rpm": "^6.0.0-beta.61",
 		"@electron-forge/maker-squirrel": "^6.0.0-beta.61",
 		"@electron-forge/maker-zip": "^6.0.0-beta.61",
-		"@types/electron": "^1.6.10",
-		"electron": "^16.0.4",
+		"electron": "^16.0.6",
 		"electron-rebuild": "^3.2.5",
 		"typescript": "^4.5.3",
 		"typescript-language-server": "^0.8.1"
@@ -31,6 +30,7 @@
 		"@types/node-fetch": "^2.5.12",
 		"@types/uuid": "^8.3.1",
 		"@types/workerpool": "^6.1.0",
+		"@types/ws": "^8.2.2",
 		"adm-zip": "^0.5.9",
 		"deno-vm": "^0.8.1",
 		"electron-squirrel-startup": "^1.0.0",
@@ -43,9 +43,14 @@
 		"piscina": "^3.1.0",
 		"uuid": "^8.3.2",
 		"vm2": "^3.9.5",
-		"workerpool": "^6.1.5"
+		"workerpool": "^6.1.5",
+		"ws": "^8.4.0"
 	},
 	"config": {
 		"forge": "./forge.config.js"
+	},
+	"optionalDependencies": {
+		"bufferutil": "^4.0.6",
+		"utf-8-validate": "^5.0.8"
 	}
 }

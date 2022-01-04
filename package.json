@@ -1,9 +1,15 @@
 {
-	"name": "nathene-monorepo",
-	"version": "0.0.1-alpha",
-	"workspaces": [
-		"electron/*",
-		"svelte/*",
-		"plugin-runtime/*"
-	]
+  "name": "nathene-monorepo",
+  "version": "0.0.1-alpha",
+  "workspaces": [
+    "electron/*",
+    "svelte/*",
+    "plugin-runtime/*"
+  ],
+  "devDependencies": {
+    "@nrwl/workspace": "latest",
+    "@nrwl/cli": "latest",
+    "@nrwl/tao": "latest",
+    "typescript": "4.2.4"
+  }
 }
