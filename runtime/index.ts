@@ -1,4 +1,5 @@
 import ipc from "node-ipc";
+import { inspect } from "util";
 import { stat } from "fs/promises";
 import path from "path";
 import {
@@ -11,12 +12,35 @@ import {
 import type { Readable, Writable } from "stream";
 import { Command, Config, Server, ValidPlatforms } from "./types";
 import { getConfigFile } from "./config";
-import { Socket } from "net";
-import { parse } from "uuid";
 
 const main = async () => {
 	overrideConsole();
 	const config = await getConfigFile();
+
+	for (let i = 0; i < process.argv.length; i++) {
+		const arg = process.argv[i];
+
+		if (!arg.startsWith("-")) continue;
+
+		switch (arg) {
+			case "--startLocal":
+			case "-sl":
+				await startLocalServers(config);
+				break;
+			case "--startSpecific":
+			case "-speci": {
+				const typeList = process.argv[i + 1].split(",");
+
+				for (const type of typeList) {
+					const findType = config.servers.find((val) => val.type === type);
+
+					if (!findType) continue;
+
+					await startServer(config, findType);
+				}
+			}
+		}
+	}
 
 	if (process.argv.includes("--startLocal") || process.argv.includes("-sl")) {
 		await startLocalServers(config);
@@ -46,6 +70,7 @@ const startLocalServers = async (config: Config) => {
 const startServer = async (config: Config, server: Server, fork = false) => {
 	const workingDir = path.resolve(config.serverDirectory, server.name);
 	const indexFile = path.join(workingDir, server.pathToIndex);
+	const print = getPrintFunction(server.type);
 
 	try {
 		//check if file is accesable
@@ -59,13 +84,22 @@ const startServer = async (config: Config, server: Server, fork = false) => {
 
 			console.log(`started ${server.type}`);
 
-			const print = getPrintFunction(server.type);
-
 			prefixReadableStream(newSubServer.stdout, "LOG", print);
 			prefixReadableStream(newSubServer.stderr, "ERR", print);
 
 			return;
 		}
+
+		const newSubServer = await extendedFork(command, workingDir, indexFile);
+
+		console.log(`started ${server.type} with builtin-node-ipc`);
+
+		if (newSubServer.stdout && newSubServer.stderr) {
+			prefixReadableStream(newSubServer.stdout, "LOG", print);
+			prefixReadableStream(newSubServer.stderr, "ERR", print);
+		}
+
+		return;
 	} catch (e) {
 		console.error(`Error accessing ${indexFile}:`);
 	}
@@ -195,32 +229,34 @@ const getValidPlatform = (): ValidPlatforms => {
 };
 
 const overrideConsole = () => {
-	const originalConsoleLog = console.log;
+	const __log = getPrintFunction("main");
 
-	console.log = function () {
-		const args = [];
+	const argsToParsedArgs = (args: any[]) => {
+		const stringedArgs: string[] = [];
 
-		args.push("[Main-LOG]:");
+		for (let i = 0; i < args.length; i++) {
+			const arg = args[i];
 
-		for (var i = 0; i < arguments.length; i++) {
-			args.push(arguments[i]);
+			if (typeof arg === "object") {
+				stringedArgs.push(inspect(arg, { colors: true, depth: 5 }));
+				continue;
+			}
+			if (typeof arg === "number" || typeof arg === "boolean") {
+				stringedArgs.push(arg.toString());
+				continue;
+			}
+			stringedArgs.push(arg);
 		}
 
-		originalConsoleLog.apply(console, args);
+		return stringedArgs;
 	};
 
-	const originalConsoleError = console.error;
+	console.log = (...args: any[]) => {
+		__log(argsToParsedArgs(args).join(" "), "LOG");
+	};
 
-	console.error = function () {
-		const args = [];
-
-		args.push("[Main-ERR]:");
-
-		for (var i = 0; i < arguments.length; i++) {
-			args.push(arguments[i]);
-		}
-
-		originalConsoleError.apply(console, args);
+	console.error = (...args: any[]) => {
+		__log(argsToParsedArgs(args).join(), "ERR");
 	};
 };
 

@@ -41,7 +41,6 @@ export const isConfig = (input: any): input is Config => {
 	if (typeof input.serverDirectory !== "string") return false;
 
 	for (const server of input.servers) {
-		console.log(server);
 		if (!isServer(server)) return false;
 	}
 
@@ -50,19 +49,19 @@ export const isConfig = (input: any): input is Config => {
 
 export const isServer = (input: any): input is Server => {
 	if (
-		input.type !== "windowServer" ||
-		input.type !== "uiServer" ||
-		input.type !== "fileServer"
+		!(
+			input.type == "windowServer" ||
+			input.type == "uiServer" ||
+			input.type == "fileServer"
+		)
 	)
 		return false;
-	console.log("gut 1");
 
 	if (typeof input.name !== "string") return false;
 	if (typeof input.pathToIndex !== "string") return false;
 	if (typeof input.platform !== "string") return false;
 	if (
-		input.communication !== "tcp" ||
-		input.communication !== "node-builtin-ipc"
+		!(input.communication == "tcp" || input.communication == "node-builtin-ipc")
 	)
 		return false;
 
