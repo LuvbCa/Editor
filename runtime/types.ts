@@ -6,10 +6,12 @@ export interface Config {
 }
 
 export interface Server {
-	type: "WindowServer" | "UIServer" | "FileServer";
+	type: "windowServer" | "uiServer" | "fileServer";
 	name: string;
 	pathToIndex: string;
 	platform: string;
+	communication: "tcp" | "node-builtin-ipc";
+	location: "local" | "remote";
 }
 
 export interface Platforms {

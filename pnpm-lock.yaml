@@ -18,9 +18,11 @@ importers:
     specifiers:
       '@types/node-ipc': ^9.2.0
       node-ipc: ^10.1.0
+      uuid: ^8.3.2
     dependencies:
       '@types/node-ipc': 9.2.0
       node-ipc: 10.1.0
+      uuid: 8.3.2
 
   runtime:
     specifiers:

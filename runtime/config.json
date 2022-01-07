@@ -2,22 +2,28 @@
 	"serverDirectory": "../servers/core",
 	"servers": [
 		{
-			"type": "WindowServer",
+			"type": "windowServer",
 			"name": "window_electron",
 			"pathToIndex": "dist/index.js",
-			"platform": "electron"
+			"platform": "electron",
+			"location": "local",
+			"communication": "tcp"
 		},
 		{
-			"Type": "UIServer",
+			"type": "uiServer",
 			"name": "ui_svelte",
 			"pathToIndex": "dist/index.js",
-			"platform": "node"
+			"platform": "node",
+			"location": "local",
+			"communication": "node-builtin-ipc"
 		},
 		{
-			"type": "FileServer",
+			"type": "fileServer",
 			"name": "file_nodejs",
 			"pathToIndex": "dist/index.js",
-			"platform": "node"
+			"platform": "node",
+			"location": "local",
+			"communication": "node-builtin-ipc"
 		}
 	],
 	"runtimePort": 8080,
