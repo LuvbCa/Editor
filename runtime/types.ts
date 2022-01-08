@@ -1,3 +1,7 @@
+export type CommunicationTypes = "tcp" | "ipc" | "node-builtin-ipc";
+export type ServerTypes = "windowServer" | "uiServer" | "fileServer";
+export type LocationTypes = "local" | "remote";
+export type PlatformTypes = "win32" | "darwin" | "linux";
 export interface Config {
 	serverDirectory: string;
 	servers: Server[];
@@ -6,12 +10,12 @@ export interface Config {
 }
 
 export interface Server {
-	type: "windowServer" | "uiServer" | "fileServer";
+	type: ServerTypes;
 	name: string;
 	pathToIndex: string;
 	platform: string;
-	communication: "tcp" | "node-builtin-ipc";
-	location: "local" | "remote";
+	communication: CommunicationTypes;
+	location: LocationTypes;
 }
 
 export interface Platforms {
@@ -32,10 +36,8 @@ export interface LocalCommand {
 
 export type Command = GlobalCommand | LocalCommand;
 
-export type ValidPlatforms = "win32" | "darwin" | "linux";
-
 export type ExecutionLocation = {
-	[key in ValidPlatforms]: {
+	[key in PlatformTypes]: {
 		/**
 		 * will be relative to working dir of the directory the server is in.
 		 */

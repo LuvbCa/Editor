@@ -1,4 +1,3 @@
-import ipc from "node-ipc";
 import { inspect } from "util";
 import { stat } from "fs/promises";
 import path from "path";
@@ -10,8 +9,9 @@ import {
 } from "child_process";
 
 import type { Readable, Writable } from "stream";
-import { Command, Config, Server, ValidPlatforms } from "./types";
+import { Command, Config, PlatformTypes, Server } from "./types";
 import { getConfigFile } from "./config";
+import { startServer as startCommunicationServer } from "../nathene/nathcommrapi/index";
 
 const main = async () => {
 	overrideConsole();
@@ -34,7 +34,10 @@ const main = async () => {
 				for (const type of typeList) {
 					const findType = config.servers.find((val) => val.type === type);
 
-					if (!findType) continue;
+					if (!findType) {
+						console.log(`'${type}' is not recognized as type of any server`);
+						continue;
+					}
 
 					await startServer(config, findType);
 				}
@@ -55,6 +58,7 @@ const startLocalServers = async (config: Config) => {
 
 		if (server.communication === "node-builtin-ipc") {
 			startingServers.push(startServer(config, server, true));
+
 			return;
 		}
 		if (server.communication === "tcp") {
@@ -91,6 +95,16 @@ const startServer = async (config: Config, server: Server, fork = false) => {
 		}
 
 		const newSubServer = await extendedFork(command, workingDir, indexFile);
+
+		const send = startCommunicationServer(
+			{
+				type: "node-builtin-ipc",
+				process: newSubServer,
+			},
+			(event, payload) => {
+				console.log(event, payload);
+			}
+		);
 
 		console.log(`started ${server.type} with builtin-node-ipc`);
 
@@ -209,7 +223,7 @@ const prefixReadableStream = (
 	});
 };
 
-const getValidPlatform = (): ValidPlatforms => {
+const getValidPlatform = (): PlatformTypes => {
 	switch (process.platform) {
 		case "win32": {
 			return "win32";
