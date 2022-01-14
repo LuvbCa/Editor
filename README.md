@@ -1,10 +1,10 @@
 # Nathene Editor | NE
 
-![Nathene Banner](./media/banner.png)
+![Nathene Banner](./docs/images/banner.png)
 
 ---
 
-## name origin
+## Name origin
 
 - **N-** for Nyx:
   - dark theme
@@ -27,14 +27,15 @@
 
   - run `pnpm install` in top level directory
 
-- Step 2 - **Electron**-backend:
+- Step 2 - run **Runtime**:
 
-  - run `npm start` in `./electron`
-  - _optionally: run `tsc --watch -p ./tsconfig.json` in `./electron` for automatic compilation of typescript_
-
-- Step 3 - **Svelte**-frontend:
-
-  - run `npm run dev` in `./svelte`
+  1. `cd ./runtime`
+  2. `node ./dist/index.js`
+     - arguments:
+       - `-sl` || `--startLocal`
+         > starts all local server defined in `./runtime/config.json`
+       - `-speci` || `--startSpecific` type1,type2,type3...
+         > [type](./runtime/types.ts) from the `interface Server` <br> type of server must be local!
 
 ---
 

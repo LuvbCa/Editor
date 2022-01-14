@@ -2,15 +2,17 @@ import { app, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { parseNatheneConfig } from "./globals";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
+import { createConnection } from "net";
+
 import {
 	registerIpcEvents,
 	registerKeyCombinations,
 	registerWindowEvents,
 } from "./utils";
 
-
 app.on("ready", async (event, info) => {
-	createWindow();
+	await createWindow();
+	// connectMaster();
 
 	app.on("activate", () => {
 		if (BrowserWindow.getAllWindows().length === 0) {
@@ -46,6 +48,7 @@ const createWindow = async () => {
 	});
 
 	win.webContents.openDevTools();
+
 	win.loadURL("http://localhost:3000/");
 
 	//so window gets shown
@@ -53,8 +56,13 @@ const createWindow = async () => {
 
 	win.webContents.on("did-start-loading", () => {});
 
+	win.webContents.once("did-fail-load", () => {
+		win.loadURL("https://google.com");
+	});
+
 	win.webContents.once("did-finish-load", async () => {
-		await parseNatheneConfig();
+		connectMaster();
+		// await parseNatheneConfig();
 		const releasePlugins = await pluginLoader();
 
 		registerKeyCombinations(win);
@@ -66,5 +74,21 @@ const createWindow = async () => {
 			console.log("reloading");
 			win.webContents.send("finishedLoading");
 		});
+	});
+};
+
+const connectMaster = () => {
+	console.log("hello from electron");
+
+	const master = createConnection({
+		port: 54732,
+	});
+
+	master.on("error", (err) => {
+		console.error(err);
+	});
+
+	master.once("connect", () => {
+		console.log("woh");
 	});
 };

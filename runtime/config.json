@@ -1,0 +1,53 @@
+{
+	"serverDirectory": "../servers/core",
+	"servers": [
+		{
+			"type": "windowServer",
+			"name": "window_electron",
+			"pathToIndex": "dist/index.js",
+			"platform": "electron",
+			"location": "local",
+			"communication": "tcp"
+		},
+		{
+			"type": "uiServer",
+			"name": "ui_svelte",
+			"pathToIndex": "dist/index.js",
+			"platform": "node",
+			"location": "local",
+			"communication": "node-builtin-ipc"
+		},
+		{
+			"type": "fileServer",
+			"name": "file_nodejs",
+			"pathToIndex": "dist/index.js",
+			"platform": "node",
+			"location": "local",
+			"communication": "node-builtin-ipc"
+		}
+	],
+	"runtimePort": 8080,
+	"platforms": {
+		"electron": {
+			"isGlobal": false,
+			"command": {
+				"win32": {
+					"path": "node_modules/.bin/electron.cmd"
+				}
+			},
+			"spawnArgs": []
+		},
+		"node": {
+			"isGlobal": true,
+			"pathToExecutable": "",
+			"command": "node",
+			"spawnArgs": []
+		},
+		"native": {
+			"isGlobal": true,
+			"pathToExecutable": "",
+			"command": "./",
+			"spawnArgs": []
+		}
+	}
+}
