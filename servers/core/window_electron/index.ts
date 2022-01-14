@@ -2,7 +2,7 @@ import { app, BrowserWindow, globalShortcut, nativeImage } from "electron";
 import { parseNatheneConfig } from "./globals";
 import path from "path";
 import { pluginLoader } from "./assets/plugin/loader";
-import ipc from "node-ipc";
+import { createConnection } from "net";
 
 import {
 	registerIpcEvents,
@@ -10,25 +10,26 @@ import {
 	registerWindowEvents,
 } from "./utils";
 
-// app.on("ready", async (event, info) => {
-// 	createWindow();
+app.on("ready", async (event, info) => {
+	await createWindow();
+	// connectMaster();
 
-// 	app.on("activate", () => {
-// 		if (BrowserWindow.getAllWindows().length === 0) {
-// 			createWindow();
-// 		}
-// 	});
-// });
+	app.on("activate", () => {
+		if (BrowserWindow.getAllWindows().length === 0) {
+			createWindow();
+		}
+	});
+});
 
-// app.on("will-quit", () => {
-// 	globalShortcut.unregisterAll();
-// });
+app.on("will-quit", () => {
+	globalShortcut.unregisterAll();
+});
 
-// app.on("window-all-closed", () => {
-// 	if (process.platform !== "darwin") {
-// 		app.quit();
-// 	}
-// });
+app.on("window-all-closed", () => {
+	if (process.platform !== "darwin") {
+		app.quit();
+	}
+});
 
 const createWindow = async () => {
 	const icon = nativeImage.createFromPath("./assets/loading_window/icon.png");
@@ -47,6 +48,7 @@ const createWindow = async () => {
 	});
 
 	win.webContents.openDevTools();
+
 	win.loadURL("http://localhost:3000/");
 
 	//so window gets shown
@@ -54,8 +56,13 @@ const createWindow = async () => {
 
 	win.webContents.on("did-start-loading", () => {});
 
+	win.webContents.once("did-fail-load", () => {
+		win.loadURL("https://google.com");
+	});
+
 	win.webContents.once("did-finish-load", async () => {
-		await parseNatheneConfig();
+		connectMaster();
+		// await parseNatheneConfig();
 		const releasePlugins = await pluginLoader();
 
 		registerKeyCombinations(win);
@@ -70,10 +77,18 @@ const createWindow = async () => {
 	});
 };
 
-const main = () => {
-	ipc.connectTo("master", "/tmp/nathene.editor");
+const connectMaster = () => {
+	console.log("hello from electron");
 
-	ipc.of["master"].emit("register", { type: "windowServer" });
+	const master = createConnection({
+		port: 54732,
+	});
+
+	master.on("error", (err) => {
+		console.error(err);
+	});
+
+	master.once("connect", () => {
+		console.log("woh");
+	});
 };
-
-main();

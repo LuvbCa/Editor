@@ -30,6 +30,8 @@ importers:
       '@types/uuid': ^8.3.3
       '@types/ws': ^8.2.2
       bufferutil: ^4.0.6
+      nathcommrapi: link:/nathene/nathcommrapi
+      nathene-communication-rapi: link:/nathene/nathcommrapi
       node-ipc: ^10.1.0
       utf-8-validate: ^5.0.8
       uuid: ^8.3.2
@@ -38,6 +40,8 @@ importers:
       '@types/node-ipc': 9.2.0
       '@types/uuid': 8.3.3
       '@types/ws': 8.2.2
+      nathcommrapi: link:../../../../../nathene/nathcommrapi
+      nathene-communication-rapi: link:../nathene/nathcommrapi
       node-ipc: 10.1.0
       uuid: 8.3.2
       ws: 8.4.0_bffff4271b89d628e8333ead80d3d8e8

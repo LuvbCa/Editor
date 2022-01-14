@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { Server } from "net";
+import { Server, createServer } from "net";
 import { ChildProcess } from "child_process";
 
 interface ServerOptions {
@@ -13,24 +13,29 @@ export const startServer = (
 ): Promise<(event: string, payload: any) => void> => {
 	return new Promise((resolve, reject) => {
 		if (options.type == "tcp" || options.type == "ipc") {
-			const server = new Server((socket) => {
-				socket.setEncoding("utf8");
+			const server = createServer((socket) => {
+				console.log("connection received.");
 
-				socket.on("connect", () => {
-					console.log("connected");
-				});
+				socket.setEncoding("utf8");
 
 				socket.on("data", (data) => {
 					if (!socket.readableEncoding) throw new Error("encoding not set");
 
 					const stringData = data.toString(socket.readableEncoding);
-					const jsonData = JSON.parse(stringData);
 
-					const { event, payload } = jsonData;
+					if (
+						stringData.startsWith("\u0002") &&
+						stringData.endsWith("\u0003")
+					) {
+						console.log("received new command");
 
-					if (!event) throw new Error("no event delievered");
+						const length = stringData.length;
 
-					receiveHandler(event, payload);
+						const text = stringData.slice(1, length - 1);
+
+						console.log(text);
+					}
+					// parseAndHandle(stringData, receiveHandler);
 				});
 
 				resolve((event, payload) => {
@@ -48,10 +53,14 @@ export const startServer = (
 					console.log("ipc now listening on '\\\\?\\pipe\\nathene.editor'");
 				});
 			} else {
-				server.listen(98573, "localhost", () => {
-					console.log("tcp now listening on port '98573'");
+				server.listen(54732, "localhost", () => {
+					console.log("tcp now listening on port '54732'");
 				});
 			}
+
+			server.on("error", (err) => {
+				console.error(err);
+			});
 		} else if (options.type == "node-builtin-ipc") {
 			if (!options.process) throw new Error("no ChildProcess is given");
 
@@ -71,3 +80,17 @@ export const startServer = (
 		}
 	});
 };
+
+const parseAndHandle = (
+	data: string,
+	handler: (event: string, payload: any) => void
+) => {
+	const jsonData = JSON.parse(data);
+
+	const { event, payload } = jsonData;
+
+	if (!event) throw new Error("no event delievered");
+
+	handler(event, payload);
+};
+

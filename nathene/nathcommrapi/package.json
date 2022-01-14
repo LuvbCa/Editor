@@ -1,16 +1,16 @@
 {
-  "name": "nathene-communication-rapi",
-  "version": "0.0.1-alpha",
-  "description": "communication used by the nathen runtime",
-  "main": ".",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/node-ipc": "^9.2.0",
-    "node-ipc": "^10.1.0",
-    "uuid": "^8.3.2"
-  }
+	"name": "nathene-communication-rapi",
+	"version": "0.0.1-alpha",
+	"description": "communication used by the nathen runtime",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Luca Michael Mathaea",
+	"license": "ISC",
+	"dependencies": {
+		"@types/node-ipc": "^9.2.0",
+		"node-ipc": "^10.1.0",
+		"uuid": "^8.3.2"
+	}
 }

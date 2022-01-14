@@ -4,31 +4,34 @@
 
 ---
 
-## nathene-communication-runtime-api | nathene-communication-rapi
+## list of apis
 
-- `nathene-`
-  - identifier it as a nathene component
-- `communiction-`
-  - identifier for usecase
-- `r` short for runtime
-  - to identify where it is used
-- `api` short for application programming interface
-  - identifier for the type of application
+- ### nathene-communication-runtime-api | nathene-communication-rapi
 
-## nathene-communication-server-api | nathcommsapi
+  - [communication definition](./COMMUNICTION.MD)
+  - `nathene-`
+    - identifier it as a nathene component
+  - `communiction-`
+    - identifier for usecase
+  - `r` short for runtime
+    - to identify where it is used
+  - `api` short for application programming interface
+    - identifier for the type of application
 
-- `nathene-`
-  - identifier it as a nathene component
-- `communiction-`
-  - identifier for usecase
-- `s` short for server
-  - to identify where it is used
-- `api` short for application programming interface
-  - identifier for the type of application
+- ### nathene-communication-server-api | nathcommsapi
+  - [communication definition](./COMMUNICTION.MD)
+  - `nathene-`
+    - identifier it as a nathene componen
+  - `communiction-`
+    - identifier for usecase
+  - `s` short for server
+    - to identify where it is used
+  - `api` short for application programming interface
+    - identifier for the type of application
 
 ---
 
-### focus for both api's
+## focus for the apis'
 
 > no warranty for any of these points
 

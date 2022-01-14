@@ -11,11 +11,13 @@ import {
 import type { Readable, Writable } from "stream";
 import { Command, Config, PlatformTypes, Server } from "./types";
 import { getConfigFile } from "./config";
-import { startServer as startCommunicationServer } from "../nathene/nathcommrapi/index";
+import { startServer as startCommunicationServer } from "nathene-communication-rapi";
 
 const main = async () => {
 	overrideConsole();
 	const config = await getConfigFile();
+
+	startCommunicationServer({ type: "tcp" }, () => {});
 
 	for (let i = 0; i < process.argv.length; i++) {
 		const arg = process.argv[i];
@@ -41,12 +43,9 @@ const main = async () => {
 
 					await startServer(config, findType);
 				}
+				break;
 			}
 		}
-	}
-
-	if (process.argv.includes("--startLocal") || process.argv.includes("-sl")) {
-		await startLocalServers(config);
 	}
 };
 
@@ -95,16 +94,6 @@ const startServer = async (config: Config, server: Server, fork = false) => {
 		}
 
 		const newSubServer = await extendedFork(command, workingDir, indexFile);
-
-		const send = startCommunicationServer(
-			{
-				type: "node-builtin-ipc",
-				process: newSubServer,
-			},
-			(event, payload) => {
-				console.log(event, payload);
-			}
-		);
 
 		console.log(`started ${server.type} with builtin-node-ipc`);
 
