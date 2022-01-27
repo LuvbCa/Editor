@@ -53,7 +53,7 @@
 		"refractor": "^4.2.1",
 		"svelte-loading-spinners": "^0.1.7",
 		"svelte-slimscroll": "^1.0.6",
-		"three": "^0.132.2",
+		"three": "^0.137.0",
 		"tree-sitter-typescript": "^0.19.0",
 		"troika-three-text": "^0.42.0",
 		"web-tree-sitter": "^0.19.4"
