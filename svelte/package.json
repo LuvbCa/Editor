@@ -43,7 +43,7 @@
 		"@tauri-apps/api": "^1.0.0-beta.8",
 		"@types/three": "^0.131.0",
 		"cookie": "^0.4.1",
-		"electron": "^15.1.0",
+		"electron": "^15.3.5",
 		"happy-svelte-scrollbar": "^1.1.0",
 		"hast-to-hyperscript": "^10.0.1",
 		"hex-rgb": "^5.0.0",
