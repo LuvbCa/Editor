@@ -2,5 +2,7 @@
 	"[svelte]": {
 		"editor.defaultFormatter": "svelte.svelte-vscode"
 	},
-	"rust-analyzer.procMacro.enable": false
+	"[go]": {
+		"editor.defaultFormatter": "golang.go"
+	}
 }
